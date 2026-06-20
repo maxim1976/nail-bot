@@ -19,3 +19,5 @@ CLAUDE_ERROR = "我這邊出了一點狀況，請稍後再試 🙏"
 OWNER_RATE_LIMIT_ALERT = (
     "⚠️ Anthropic 429: nail-bot hit account rate limit; users seeing fallback reply."
 )
+
+PORTFOLIO_TRIGGER = "🖼 作品集"

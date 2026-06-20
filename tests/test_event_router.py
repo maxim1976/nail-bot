@@ -120,3 +120,29 @@ def test_normal_message_calls_agent(mock_reply, mock_rate):
     handle_event(_message_event("hi"), line_client=lc, rich_menu_id=None)
     mock_reply.assert_called_once()
     lc.reply.assert_called_once()
+
+
+@patch("app.event_router.build_portfolio_carousel")
+def test_portfolio_trigger_sends_carousel(mock_carousel):
+    from app.line_client import ReplyMessage
+    mock_carousel.return_value = ReplyMessage.flex("作品集", {"type": "carousel", "contents": []})
+    with session_scope() as s:
+        s.add(User(line_user_id="U001", current_agent_key="booking_assistant"))
+    lc = _line_client()
+    handle_event(_message_event("🖼 作品集"), line_client=lc, rich_menu_id=None)
+    mock_carousel.assert_called_once()
+    lc.reply.assert_called_once()
+    msg = lc.reply.call_args.kwargs["messages"][0]
+    assert msg.payload["type"] == "flex"
+
+
+@patch("app.event_router.build_portfolio_carousel")
+def test_portfolio_trigger_no_items_sends_text(mock_carousel):
+    mock_carousel.return_value = None
+    with session_scope() as s:
+        s.add(User(line_user_id="U001", current_agent_key="booking_assistant"))
+    lc = _line_client()
+    handle_event(_message_event("🖼 作品集"), line_client=lc, rich_menu_id=None)
+    msg = lc.reply.call_args.kwargs["messages"][0]
+    assert msg.payload["type"] == "text"
+    assert "敬請期待" in msg.payload["text"]

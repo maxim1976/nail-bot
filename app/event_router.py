@@ -13,6 +13,7 @@ from app.db import session_scope
 from app.line_client import LineClient, ReplyMessage
 from app.models import User
 from app.personas import get_persona
+from app.portfolio_carousel import build_portfolio_carousel
 from app.rate_limiter import RateLimitDecision, check_and_increment
 from app.replies import (
     CLAUDE_ERROR,
@@ -22,6 +23,7 @@ from app.replies import (
     KILLED_OFFLINE,
     OWNER_RATE_LIMIT_ALERT,
     PERSONA_SELECT,
+    PORTFOLIO_TRIGGER,
     WELCOME_FOLLOW,
     WELCOME_FOLLOW_QUICK_REPLIES,
 )
@@ -99,6 +101,18 @@ def _handle_message(event: dict[str, Any], line_client: LineClient) -> None:
                 ReplyMessage.text(persona.welcome_message, quick_replies=persona.quick_replies)
             ],
         )
+        return
+
+    # Portfolio carousel shortcut — bypasses agent when user taps the quick reply
+    if text == PORTFOLIO_TRIGGER and current_agent is not None:
+        carousel = build_portfolio_carousel()
+        if carousel:
+            line_client.reply(reply_token=reply_token, messages=[carousel])
+        else:
+            line_client.reply(
+                reply_token=reply_token,
+                messages=[ReplyMessage.text("目前尚無作品，敬請期待！")],
+            )
         return
 
     if current_agent is None:
