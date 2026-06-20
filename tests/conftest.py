@@ -49,7 +49,6 @@ def _stub_required_env(pg_url: str) -> None:
 @pytest.fixture(autouse=True)
 def _clean_db(engine: Engine) -> Iterator[None]:
     import app.models  # noqa: F401 — registers models with Base
-
     from app.db import Base, _engine_for_tests
 
     _engine_for_tests(engine)

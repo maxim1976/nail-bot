@@ -67,6 +67,7 @@ def test_generate_agent_reply_saves_conversation_history(mock_call):
     mock_call.return_value = _mock_result("reply text")
     generate_agent_reply(line_user_id="U001", text="question", history_turns=5)
     from sqlalchemy import select
+
     from app.models import Message
     with session_scope() as s:
         msgs = s.execute(select(Message).order_by(Message.created_at)).scalars().all()

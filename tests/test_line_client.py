@@ -5,7 +5,6 @@ import hashlib
 import hmac
 
 import httpx
-import pytest
 import respx
 
 from app.line_client import LineClient, ReplyMessage, verify_signature
