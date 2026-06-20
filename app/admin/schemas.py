@@ -79,3 +79,23 @@ class AdminServiceOut(BaseModel):
     sort_order: int
     created_at: datetime
     updated_at: datetime
+
+
+class AdminPortfolioIn(BaseModel):
+    title: str
+    image_url: str
+    service_id: uuid.UUID | None = None
+    sort_order: int = 0
+    is_visible: bool = True
+
+
+class AdminPortfolioOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    title: str
+    image_url: str
+    service_id: uuid.UUID | None
+    sort_order: int
+    is_visible: bool
+    created_at: datetime
