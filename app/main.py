@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.appointments import router as appointments_router
+from app.api.portfolio import router as portfolio_router
 from app.api.services import router as services_router
 from app.config import get_settings
 from app.line_client import LineClient
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(webhook_router)
     app.include_router(services_router)
     app.include_router(appointments_router)
+    app.include_router(portfolio_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:

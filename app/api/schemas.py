@@ -43,3 +43,15 @@ class AppointmentOut(BaseModel):
     status: str
     customer_name: str
     notes: str | None
+
+
+class PortfolioItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    title: str
+    image_url: str
+    service_id: uuid.UUID | None
+    service_name: str | None
+    service_category: str | None
+    sort_order: int
