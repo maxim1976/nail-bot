@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.admin.auth import router as admin_auth_router
 from app.api.appointments import router as appointments_router
 from app.api.portfolio import router as portfolio_router
 from app.api.services import router as services_router
@@ -38,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(services_router)
     app.include_router(appointments_router)
     app.include_router(portfolio_router)
+    app.include_router(admin_auth_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:
