@@ -5,6 +5,7 @@ import { DatePicker } from './screens/DatePicker'
 import { TimePicker } from './screens/TimePicker'
 import { ConfirmScreen } from './screens/ConfirmScreen'
 import { SuccessScreen } from './screens/SuccessScreen'
+import { GalleryScreen } from './screens/GalleryScreen'
 
 declare global {
   interface Window {
@@ -32,7 +33,6 @@ export function App() {
 
   useEffect(() => {
     if (!LIFF_ID) {
-      // dev mode: use a placeholder user
       setLineUserId('U_dev_user')
       setReady(true)
       return
@@ -60,7 +60,17 @@ export function App() {
   )
 
   if (screen === 'service') return (
-    <ServicePicker onSelect={svc => { setSelectedService(svc); setScreen('date') }} />
+    <ServicePicker
+      onSelect={svc => { setSelectedService(svc); setScreen('date') }}
+      onGallery={() => setScreen('gallery')}
+    />
+  )
+
+  if (screen === 'gallery') return (
+    <GalleryScreen
+      onBook={svc => { setSelectedService(svc); setScreen('date') }}
+      onBack={() => setScreen('service')}
+    />
   )
 
   if (screen === 'date' && selectedService) return (

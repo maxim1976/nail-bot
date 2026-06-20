@@ -1,4 +1,4 @@
-import type { AppointmentIn, AppointmentOut, Service, Slot } from './types'
+import type { AppointmentIn, AppointmentOut, PortfolioItem, Service, Slot } from './types'
 
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
@@ -22,5 +22,11 @@ export async function createAppointment(body: AppointmentIn): Promise<Appointmen
   })
   if (r.status === 409) throw new Error('SLOT_TAKEN')
   if (!r.ok) throw new Error('Failed to create appointment')
+  return r.json()
+}
+
+export async function fetchPortfolio(): Promise<PortfolioItem[]> {
+  const r = await fetch(`${BASE}/api/portfolio`)
+  if (!r.ok) throw new Error('Failed to load portfolio')
   return r.json()
 }

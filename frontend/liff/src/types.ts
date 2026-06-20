@@ -35,9 +35,20 @@ export interface AppointmentOut {
   notes?: string
 }
 
+export interface PortfolioItem {
+  id: string
+  title: string
+  image_url: string
+  service_id: string | null
+  service_name: string | null
+  service_category: string | null
+  sort_order: number
+}
+
 export type Screen =
   | 'service'
   | 'date'
   | 'time'
   | 'confirm'
   | 'success'
+  | 'gallery'

@@ -5,9 +5,10 @@ import { Layout } from '../components/Layout'
 
 interface Props {
   onSelect: (service: Service) => void
+  onGallery?: () => void
 }
 
-export function ServicePicker({ onSelect }: Props) {
+export function ServicePicker({ onSelect, onGallery }: Props) {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +25,17 @@ export function ServicePicker({ onSelect }: Props) {
 
   return (
     <Layout>
-      <h2 className="font-['Bodoni_Moda',serif] text-2xl mb-6">選擇服務</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="font-['Bodoni_Moda',serif] text-2xl">選擇服務</h2>
+        {onGallery && (
+          <button
+            onClick={onGallery}
+            className="text-sm text-[#B86E78] font-medium"
+          >
+            作品集 →
+          </button>
+        )}
+      </div>
       <div className="grid gap-3">
         {services.map(svc => (
           <button
