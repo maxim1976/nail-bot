@@ -39,9 +39,11 @@ def test_list_services_returns_available_only():
 
 
 def test_list_services_sort_order():
-    _add_service("B", sort_order=2)
-    _add_service("A", sort_order=1)
+    id_b = _add_service("B", sort_order=2)
+    id_a = _add_service("A", sort_order=1)
     resp = client.get("/api/services")
     assert resp.status_code == 200
-    names = [d["name"] for d in resp.json()]
+    # Filter to only the services this test added
+    ids = {str(id_a), str(id_b)}
+    names = [d["name"] for d in resp.json() if d["id"] in ids]
     assert names == ["A", "B"]

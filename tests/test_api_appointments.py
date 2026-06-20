@@ -100,3 +100,27 @@ def test_my_appointments_empty():
     resp = client.get("/api/my-appointments?line_user_id=U_nobody")
     assert resp.status_code == 200
     assert resp.json() == []
+
+
+def test_my_appointments_returns_upcoming():
+    import zoneinfo
+    TZ = zoneinfo.ZoneInfo("Asia/Taipei")
+    svc_id = _setup_service(90)
+    _setup_user("U_mine")
+    _setup_template(date(2026, 7, 1).weekday())  # Wednesday
+    slot_dt = datetime(2026, 7, 1, 10, 0, tzinfo=TZ)
+    # Create via API so it goes through full booking flow
+    resp = client.post("/api/appointments", json={
+        "line_user_id": "U_mine",
+        "service_id": str(svc_id),
+        "scheduled_at": slot_dt.isoformat(),
+        "customer_name": "Mine",
+    })
+    assert resp.status_code == 201
+    # Now fetch
+    resp2 = client.get(f"/api/my-appointments?line_user_id=U_mine")
+    assert resp2.status_code == 200
+    data = resp2.json()
+    assert len(data) == 1
+    assert data[0]["customer_name"] == "Mine"
+    assert data[0]["status"] == "confirmed"

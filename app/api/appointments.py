@@ -35,19 +35,19 @@ def create_appointment(body: AppointmentIn) -> AppointmentOut:
         if service is None:
             raise HTTPException(status_code=404, detail="Service not found")
 
-        available = available_slots(
-            target_date=body.scheduled_at.date(),
-            service_id=body.service_id,
-            duration_min=service.duration_min,
-            session=s,
-        )
-
-        # Normalize the incoming datetime to Asia/Taipei for comparison
+        # Normalize FIRST, then use normalized date for slot lookup
         scheduled_at = body.scheduled_at
         if scheduled_at.tzinfo is None:
             scheduled_at = scheduled_at.replace(tzinfo=TZ)
         else:
             scheduled_at = scheduled_at.astimezone(TZ)
+
+        available = available_slots(
+            target_date=scheduled_at.date(),
+            service_id=body.service_id,
+            duration_min=service.duration_min,
+            session=s,
+        )
 
         if scheduled_at not in available:
             raise HTTPException(status_code=409, detail="Slot no longer available")
