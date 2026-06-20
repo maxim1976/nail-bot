@@ -1,7 +1,7 @@
-from app.personas._base import Persona
-from app.personas._shared import compose_system_prompt
 from app.personas import booking_assistant as _ba
 from app.personas import sales_agent as _sa
+from app.personas._base import Persona
+from app.personas._shared import compose_system_prompt
 
 PERSONAS: dict[str, Persona] = {
     _ba.persona.key: _ba.persona,
