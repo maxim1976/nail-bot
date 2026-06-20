@@ -11,7 +11,11 @@ def build_portfolio_carousel() -> ReplyMessage | None:
     with session_scope() as s:
         rows = (
             s.execute(
-                select(PortfolioItem, Service.name.label("svc_name"))
+                select(
+                    PortfolioItem.title,
+                    PortfolioItem.image_url,
+                    Service.name.label("svc_name"),
+                )
                 .outerjoin(Service, PortfolioItem.service_id == Service.id)
                 .where(PortfolioItem.is_visible == True)  # noqa: E712
                 .order_by(PortfolioItem.sort_order)
@@ -24,9 +28,9 @@ def build_portfolio_carousel() -> ReplyMessage | None:
         return None
 
     bubbles = []
-    for item, svc_name in rows:
+    for title, image_url, svc_name in rows:
         body_contents: list[dict] = [
-            {"type": "text", "text": item.title, "weight": "bold", "size": "sm", "wrap": True}
+            {"type": "text", "text": title, "weight": "bold", "size": "sm", "wrap": True}
         ]
         if svc_name:
             body_contents.append(
@@ -37,7 +41,7 @@ def build_portfolio_carousel() -> ReplyMessage | None:
             "type": "bubble",
             "hero": {
                 "type": "image",
-                "url": item.image_url,
+                "url": image_url,
                 "size": "full",
                 "aspectRatio": "1:1",
                 "aspectMode": "cover",
