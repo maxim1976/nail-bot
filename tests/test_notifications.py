@@ -98,4 +98,4 @@ def test_customer_message_in_english(line_client):
         owner_line_user_id=None,
     )
     msg_text = line_client.push.call_args[1]["messages"][0].payload["text"]
-    assert "Booking Confirmed" in msg_text or "confirmed" in msg_text.lower()
+    assert "Booking Confirmed" in msg_text, f"Expected 'Booking Confirmed' in: {msg_text!r}"

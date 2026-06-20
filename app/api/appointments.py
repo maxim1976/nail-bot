@@ -100,25 +100,18 @@ def create_appointment(body: AppointmentIn) -> AppointmentOut:
     settings = get_settings()
     lc = LineClient(channel_access_token=settings.line_channel_access_token)
 
-    # Build simple proxy objects so send_booking_confirmation works
-    class _Appt:
-        line_user_id = _appt_line_user_id
-        scheduled_at = _appt_scheduled_at
-        customer_name = _appt_customer_name
-        notes = _appt_notes
-
-    class _Svc:
-        name = _svc_name
-        price = _svc_price
-
-    class _User:
-        preferred_language = _user_lang
+    from types import SimpleNamespace
 
     with contextlib.suppress(Exception):
         send_booking_confirmation(
-            appt=_Appt(),
-            service=_Svc(),
-            user=_User(),
+            appt=SimpleNamespace(
+                line_user_id=_appt_line_user_id,
+                scheduled_at=_appt_scheduled_at,
+                customer_name=_appt_customer_name,
+                notes=_appt_notes,
+            ),
+            service=SimpleNamespace(name=_svc_name, price=_svc_price),
+            user=SimpleNamespace(preferred_language=_user_lang),
             line_client=lc,
             owner_line_user_id=settings.owner_line_user_id,
         )
