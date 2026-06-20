@@ -3,7 +3,10 @@ from __future__ import annotations
 import os
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.appointments import router as appointments_router
+from app.api.services import router as services_router
 from app.config import get_settings
 from app.line_client import LineClient
 from app.webhook import router as webhook_router
@@ -19,7 +22,18 @@ def _rich_menu_id() -> str | None:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Nail Bot — Hualienvibe")
+
+    # Add CORS (LIFF runs from LINE's origin)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    )
+
     app.include_router(webhook_router)
+    app.include_router(services_router)
+    app.include_router(appointments_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:
