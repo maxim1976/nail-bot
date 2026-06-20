@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.appointments import router as appointments_router
 from app.api.services import router as services_router
@@ -38,6 +40,10 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    _liff_dist = Path(__file__).parent.parent / "frontend" / "liff" / "dist"
+    if _liff_dist.exists():
+        app.mount("/liff", StaticFiles(directory=_liff_dist, html=True), name="liff")
 
     return app
 
