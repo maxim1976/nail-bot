@@ -40,3 +40,42 @@ class StudioProfileOut(BaseModel):
     aftercare_notes: str | None
     ai_persona_notes: str | None
     owner_line_user_id: str | None
+
+
+class AdminServiceIn(BaseModel):
+    name: str
+    name_en: str = ""
+    name_tl: str = ""
+    name_id: str = ""
+    name_vi: str = ""
+    description: str = ""
+    agent_notes: str = ""
+    duration_min: int
+    price: int
+    image_url: str | None = None
+    category: str = "general"
+    is_available: bool = True
+    in_carousel: bool = False
+    sort_order: int = 0
+
+
+class AdminServiceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    name_en: str
+    name_tl: str
+    name_id: str
+    name_vi: str
+    description: str
+    agent_notes: str
+    duration_min: int
+    price: int
+    image_url: str | None
+    category: str
+    is_available: bool
+    in_carousel: bool
+    sort_order: int
+    created_at: datetime
+    updated_at: datetime
