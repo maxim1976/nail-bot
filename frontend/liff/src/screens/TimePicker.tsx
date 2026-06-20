@@ -13,10 +13,13 @@ interface Props {
 export function TimePicker({ service, date, onSelect, onBack }: Props) {
   const [slots, setSlots] = useState<Slot[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
+    setError(false)
     fetchSlots(service.id, date)
       .then(setSlots)
+      .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [service.id, date])
 
@@ -30,7 +33,9 @@ export function TimePicker({ service, date, onSelect, onBack }: Props) {
       <button onClick={onBack} className="text-[#B86E78] text-sm mb-4">← 返回</button>
       <h2 className="font-['Bodoni_Moda',serif] text-2xl mb-2">選擇時間</h2>
       <p className="text-sm text-[#241914]/60 mb-5">{date} · {service.name}</p>
-      {slots.length === 0 ? (
+      {error ? (
+        <p className="text-center text-red-400 mt-10">載入失敗，請返回重試</p>
+      ) : slots.length === 0 ? (
         <p className="text-center text-[#241914]/50 mt-10">當天已無可用時段</p>
       ) : (
         <div className="grid grid-cols-3 gap-3">

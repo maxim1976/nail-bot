@@ -29,16 +29,27 @@ export function DatePicker({ service, onSelect, onBack }: Props) {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    Promise.all(
-      days.map(async d => {
-        const slots = await fetchSlots(service.id, toYMD(d))
-        return { date: toYMD(d), hasSlots: slots.length > 0 }
-      })
-    ).then(results => {
-      if (cancelled) return
-      setAvailableDates(new Set(results.filter(r => r.hasSlots).map(r => r.date)))
-      setLoading(false)
-    })
+
+    async function run() {
+      const results: { date: string; hasSlots: boolean }[] = []
+      const CONCURRENCY = 5
+      for (let i = 0; i < days.length; i += CONCURRENCY) {
+        const batch = days.slice(i, i + CONCURRENCY)
+        const batchResults = await Promise.all(
+          batch.map(async d => {
+            const slots = await fetchSlots(service.id, toYMD(d))
+            return { date: toYMD(d), hasSlots: slots.length > 0 }
+          })
+        )
+        results.push(...batchResults)
+      }
+      if (!cancelled) {
+        setAvailableDates(new Set(results.filter(r => r.hasSlots).map(r => r.date)))
+        setLoading(false)
+      }
+    }
+
+    run()
     return () => { cancelled = true }
   }, [service.id])
 
