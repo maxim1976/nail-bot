@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import logging
 import uuid
 import zoneinfo
 from datetime import date, datetime, timezone
@@ -11,6 +13,8 @@ from app.api.schemas import AppointmentIn, AppointmentOut, SlotOut
 from app.db import session_scope
 from app.models import Appointment, Service, User
 from app.slots import available_slots
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["public"])
 
@@ -70,7 +74,7 @@ def create_appointment(body: AppointmentIn) -> AppointmentOut:
         s.add(appt)
         s.flush()
 
-        return AppointmentOut(
+        result = AppointmentOut(
             id=appt.id,
             service_name=service.name,
             scheduled_at=appt.scheduled_at,
@@ -79,6 +83,47 @@ def create_appointment(body: AppointmentIn) -> AppointmentOut:
             customer_name=appt.customer_name,
             notes=appt.notes,
         )
+        # Capture ORM values before session closes
+        _appt_line_user_id = appt.line_user_id
+        _appt_scheduled_at = appt.scheduled_at
+        _appt_customer_name = appt.customer_name
+        _appt_notes = appt.notes
+        _svc_name = service.name
+        _svc_price = service.price
+        _user_lang = user.preferred_language if user else "zh"
+
+    # Session committed — push notifications (fire-and-forget)
+    from app.config import get_settings
+    from app.line_client import LineClient
+    from app.notifications import send_booking_confirmation
+
+    settings = get_settings()
+    lc = LineClient(channel_access_token=settings.line_channel_access_token)
+
+    # Build simple proxy objects so send_booking_confirmation works
+    class _Appt:
+        line_user_id = _appt_line_user_id
+        scheduled_at = _appt_scheduled_at
+        customer_name = _appt_customer_name
+        notes = _appt_notes
+
+    class _Svc:
+        name = _svc_name
+        price = _svc_price
+
+    class _User:
+        preferred_language = _user_lang
+
+    with contextlib.suppress(Exception):
+        send_booking_confirmation(
+            appt=_Appt(),
+            service=_Svc(),
+            user=_User(),
+            line_client=lc,
+            owner_line_user_id=settings.owner_line_user_id,
+        )
+
+    return result
 
 
 @router.get("/my-appointments", response_model=list[AppointmentOut])
