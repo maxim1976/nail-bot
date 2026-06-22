@@ -16,6 +16,21 @@ from app.personas import system_prompt_for
 _LANG_SENTINEL = re.compile(r"^\[LANG:([a-z]{2})\]\s*")
 _VALID_LANGS = {"zh", "en", "tl", "id", "vi"}
 
+_MD_BOLD_ITALIC = re.compile(r'\*{1,3}([^*\n]+?)\*{1,3}')
+_MD_UNDERLINE = re.compile(r'_{1,2}([^_\n]+?)_{1,2}')
+_MD_STRIKE = re.compile(r'~~([^~\n]+?)~~')
+_MD_HEADING = re.compile(r'^#{1,6}\s+', re.MULTILINE)
+_MD_CODE = re.compile(r'`([^`\n]+?)`')
+
+
+def _strip_markdown(text: str) -> str:
+    text = _MD_BOLD_ITALIC.sub(r'\1', text)
+    text = _MD_UNDERLINE.sub(r'\1', text)
+    text = _MD_STRIKE.sub(r'\1', text)
+    text = _MD_HEADING.sub('', text)
+    text = _MD_CODE.sub(r'\1', text)
+    return text
+
 
 @dataclass(frozen=True)
 class AgentReply:
@@ -158,7 +173,7 @@ def generate_agent_reply(*, line_user_id: str, text: str, history_turns: int) ->
             model=settings.anthropic_model,
         )
 
-    detected_lang, clean_text = _parse_lang_sentinel(result.text)
+    detected_lang, clean_text = _parse_lang_sentinel(_strip_markdown(result.text))
     cost = record_call(result.usage, ceiling_usd=settings.daily_cost_ceiling_usd)
 
     if detected_lang:
