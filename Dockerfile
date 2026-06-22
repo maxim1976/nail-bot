@@ -23,6 +23,7 @@ COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
 COPY --from=node-builder /app/frontend/liff/dist ./frontend/liff/dist
+COPY frontend/admin ./frontend/admin
 
 EXPOSE 8000
 CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
