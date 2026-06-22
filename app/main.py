@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -29,8 +30,16 @@ def _rich_menu_id() -> str | None:
     return os.environ.get("RICH_MENU_ID") or None
 
 
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    from app.scheduler import start_scheduler, stop_scheduler
+    start_scheduler()
+    yield
+    stop_scheduler()
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="Nail Bot — Hualienvibe")
+    app = FastAPI(title="Nail Bot — Hualienvibe", lifespan=_lifespan)
 
     # Add CORS (LIFF runs from LINE's origin)
     app.add_middleware(
