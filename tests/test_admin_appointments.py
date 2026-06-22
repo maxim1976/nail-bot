@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 import uuid
 import zoneinfo
-from datetime import datetime, timezone
+from datetime import datetime
 
 import jwt
 from fastapi.testclient import TestClient

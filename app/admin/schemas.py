@@ -103,6 +103,8 @@ class AdminPortfolioOut(BaseModel):
 
 
 class AdminAppointmentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: uuid.UUID
     line_user_id: str
     service_name: str
