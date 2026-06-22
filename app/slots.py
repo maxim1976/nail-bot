@@ -15,7 +15,7 @@ TZ = zoneinfo.ZoneInfo("Asia/Taipei")
 
 def available_slots(
     target_date: date,
-    service_id: uuid.UUID,
+    service_id: uuid.UUID | None,
     *,
     duration_min: int,
     session: Session | None = None,
