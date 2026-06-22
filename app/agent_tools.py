@@ -191,9 +191,15 @@ def execute_tool(name: str, tool_input: dict, *, line_user_id: str) -> str:
     if name == "get_my_appointments":
         return _get_my_appointments(line_user_id)
     if name == "cancel_appointment":
-        return _cancel_appointment(tool_input["appointment_id"], line_user_id=line_user_id)
+        appt_id = tool_input.get("appointment_id")
+        if not appt_id:
+            return json.dumps({"error": "missing required field: appointment_id"})
+        return _cancel_appointment(appt_id, line_user_id=line_user_id)
     if name == "get_services":
         return _get_services()
     if name == "get_available_slots":
-        return _get_available_slots(tool_input["date"], tool_input.get("service_id"))
+        date_str = tool_input.get("date")
+        if not date_str:
+            return json.dumps({"error": "missing required field: date"})
+        return _get_available_slots(date_str, tool_input.get("service_id"))
     return json.dumps({"error": f"Unknown tool: {name!r}"})
