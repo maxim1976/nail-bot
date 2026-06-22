@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from app.anthropic_client import AnthropicCallResult, ChatTurn, call_claude
+from app.anthropic_client import AnthropicCallResult, ChatTurn, call_claude, call_claude_with_tools
 from app.config import get_settings
 from app.cost_tracker import record_call
 from app.db import session_scope
@@ -124,6 +124,8 @@ def _build_system_prompt(agent_key: str, preferred_language: str) -> str:
 
 
 def generate_agent_reply(*, line_user_id: str, text: str, history_turns: int) -> AgentReply:
+    from app.agent_tools import BOOKING_TOOLS, execute_tool
+
     settings = get_settings()
 
     with session_scope() as s:
@@ -137,12 +139,24 @@ def generate_agent_reply(*, line_user_id: str, text: str, history_turns: int) ->
     history = _load_history(conv_id, limit=history_turns)
     system_prompt = _build_system_prompt(agent_key, preferred_language)
 
-    result: AnthropicCallResult = call_claude(
-        system_prompt=system_prompt,
-        history=history,
-        user_message=text,
-        model=settings.anthropic_model,
-    )
+    result: AnthropicCallResult
+    if agent_key == "booking_assistant":
+        tool_executor = lambda name, inp: execute_tool(name, inp, line_user_id=line_user_id)
+        result = call_claude_with_tools(
+            system_prompt=system_prompt,
+            history=history,
+            user_message=text,
+            model=settings.anthropic_model,
+            tools=BOOKING_TOOLS,
+            tool_executor=tool_executor,
+        )
+    else:
+        result = call_claude(
+            system_prompt=system_prompt,
+            history=history,
+            user_message=text,
+            model=settings.anthropic_model,
+        )
 
     detected_lang, clean_text = _parse_lang_sentinel(result.text)
     cost = record_call(result.usage, ceiling_usd=settings.daily_cost_ceiling_usd)

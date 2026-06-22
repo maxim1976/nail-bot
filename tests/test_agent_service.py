@@ -10,7 +10,7 @@ from app.db import session_scope
 from app.models import User
 
 
-def _make_user(agent_key: str = "booking_assistant", lang: str = "zh") -> None:
+def _make_user(agent_key: str = "sales_agent", lang: str = "zh") -> None:
     with session_scope() as s:
         s.add(User(line_user_id="U001", current_agent_key=agent_key, preferred_language=lang))
 
