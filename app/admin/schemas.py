@@ -117,3 +117,36 @@ class AdminAppointmentOut(BaseModel):
 
 class AdminAppointmentUpdate(BaseModel):
     status: Literal["completed", "cancelled"]
+
+
+class WeeklyTemplateIn(BaseModel):
+    start_time: time
+    end_time: time
+    slot_duration_min: int = 90
+    is_active: bool = True
+
+
+class WeeklyTemplateOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    dow: int
+    start_time: time
+    end_time: time
+    slot_duration_min: int
+    is_active: bool
+
+
+class DateOverrideIn(BaseModel):
+    date: dt_date
+    is_blocked: bool = False
+    custom_start: time | None = None
+    custom_end: time | None = None
+
+
+class DateOverrideOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    date: dt_date
+    is_blocked: bool
+    custom_start: time | None
+    custom_end: time | None

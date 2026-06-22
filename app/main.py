@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from app.admin.appointments import router as admin_appointments_router
 from app.admin.auth import router as admin_auth_router
 from app.admin.portfolio import router as admin_portfolio_router
+from app.admin.schedule import router as admin_schedule_router
 from app.admin.services import router as admin_services_router
 from app.admin.studio import router as admin_studio_router
 from app.api.appointments import router as appointments_router
@@ -48,6 +49,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_services_router)
     app.include_router(admin_portfolio_router)
     app.include_router(admin_appointments_router)
+    app.include_router(admin_schedule_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:
