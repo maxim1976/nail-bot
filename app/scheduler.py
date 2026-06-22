@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 _scheduler: BackgroundScheduler | None = None
@@ -12,7 +13,7 @@ def get_scheduler() -> BackgroundScheduler | None:
 
 def start_scheduler() -> None:
     global _scheduler
-    from app.cron import send_24h_reminders
+    from app.cron import send_24h_reminders, send_morning_summary
 
     if _scheduler is None:
         _scheduler = BackgroundScheduler(timezone="Asia/Taipei")
@@ -20,6 +21,12 @@ def start_scheduler() -> None:
             send_24h_reminders,
             IntervalTrigger(minutes=10),
             id="reminders",
+            replace_existing=True,
+        )
+        _scheduler.add_job(
+            send_morning_summary,
+            CronTrigger(hour=8, minute=0, timezone="Asia/Taipei"),
+            id="morning_summary",
             replace_existing=True,
         )
     if not _scheduler.running:

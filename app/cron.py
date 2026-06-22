@@ -68,4 +68,45 @@ def send_24h_reminders() -> None:
 
 
 def send_morning_summary() -> None:
-    pass  # implemented in Task 3
+    settings = get_settings()
+    if not settings.owner_line_user_id:
+        return
+
+    now = datetime.now(_TZ)
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    with session_scope() as s:
+        rows = s.execute(
+            select(Appointment, Service)
+            .join(Service, Appointment.service_id == Service.id)
+            .where(
+                Appointment.scheduled_at >= day_start,
+                Appointment.scheduled_at <= day_end,
+                Appointment.status == "confirmed",
+            )
+            .order_by(Appointment.scheduled_at)
+        ).all()
+
+        appts_data = [
+            (
+                appt.scheduled_at.astimezone(_TZ).strftime("%H:%M"),
+                appt.customer_name,
+                service.name,
+            )
+            for appt, service in rows
+        ]
+
+    if not appts_data:
+        text = "📋 今日無預約"
+    else:
+        lines = [f"📋 今日預約（{len(appts_data)} 筆）"]
+        for time_str, customer_name, service_name in appts_data:
+            lines.append(f"• {time_str}  {customer_name} — {service_name}")
+        text = "\n".join(lines)
+
+    client = LineClient(channel_access_token=settings.line_channel_access_token)
+    client.push(
+        line_user_id=settings.owner_line_user_id,
+        messages=[ReplyMessage.text(text)],
+    )
