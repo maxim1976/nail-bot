@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date as dt_date, datetime, time
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -99,3 +100,18 @@ class AdminPortfolioOut(BaseModel):
     sort_order: int
     is_visible: bool
     created_at: datetime
+
+
+class AdminAppointmentOut(BaseModel):
+    id: uuid.UUID
+    line_user_id: str
+    service_name: str
+    scheduled_at: datetime
+    duration_min: int
+    status: str
+    customer_name: str
+    notes: str | None
+
+
+class AdminAppointmentUpdate(BaseModel):
+    status: Literal["completed", "cancelled"]
