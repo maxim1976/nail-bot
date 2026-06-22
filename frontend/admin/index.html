@@ -141,7 +141,149 @@
 
       <!-- TAB:SERVICES:START -->
       <div x-show="currentTab === 'services'">
-        <p class="text-gray-400 text-sm">Services — coming in Task 3</p>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-[#241914]">Services</h2>
+          <button @click="openNewServiceForm()"
+            class="bg-[#B86E78] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#a5606a]">
+            + New Service
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-[#F4EDE5]">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-[#241914]">Name (zh)</th>
+                <th class="px-4 py-3 text-left font-medium text-[#241914]">Duration</th>
+                <th class="px-4 py-3 text-left font-medium text-[#241914]">Price</th>
+                <th class="px-4 py-3 text-left font-medium text-[#241914]">Category</th>
+                <th class="px-4 py-3 text-center font-medium text-[#241914]">Available</th>
+                <th class="px-4 py-3 text-center font-medium text-[#241914]">Carousel</th>
+                <th class="px-4 py-3 text-right font-medium text-[#241914]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="svc in services" :key="svc.id">
+                <tr class="border-t border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium" x-text="svc.name"></td>
+                  <td class="px-4 py-3" x-text="svc.duration_min + ' min'"></td>
+                  <td class="px-4 py-3" x-text="'NT$' + svc.price"></td>
+                  <td class="px-4 py-3 text-gray-500" x-text="svc.category"></td>
+                  <td class="px-4 py-3 text-center">
+                    <button @click="toggleServiceField(svc, 'is_available')"
+                      :class="svc.is_available ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'"
+                      class="px-2 py-0.5 rounded text-xs font-medium">
+                      <span x-text="svc.is_available ? 'Yes' : 'No'"></span>
+                    </button>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <button @click="toggleServiceField(svc, 'in_carousel')"
+                      :class="svc.in_carousel ? 'bg-[#B86E78]/20 text-[#B86E78]' : 'bg-gray-100 text-gray-500'"
+                      class="px-2 py-0.5 rounded text-xs font-medium">
+                      <span x-text="svc.in_carousel ? 'Yes' : 'No'"></span>
+                    </button>
+                  </td>
+                  <td class="px-4 py-3 text-right space-x-2">
+                    <button @click="openEditServiceForm(svc)" class="text-[#A6864F] hover:underline text-xs">Edit</button>
+                    <button @click="deleteService(svc.id)" class="text-red-500 hover:underline text-xs">Delete</button>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="services.length === 0">
+                <td colspan="7" class="px-4 py-8 text-center text-gray-400">No services yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p x-show="serviceMsg" x-text="serviceMsg" class="mt-3 text-sm text-red-600"></p>
+
+        <!-- Service modal -->
+        <div x-show="showServiceForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <h3 class="text-lg font-bold text-[#241914] mb-4"
+              x-text="editingServiceId ? 'Edit Service' : 'New Service'"></h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name (Chinese) *</label>
+                <input type="text" x-model="serviceForm.name" required
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name (English)</label>
+                <input type="text" x-model="serviceForm.name_en"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name (Filipino / Tagalog)</label>
+                <input type="text" x-model="serviceForm.name_tl"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name (Indonesian)</label>
+                <input type="text" x-model="serviceForm.name_id"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name (Vietnamese)</label>
+                <input type="text" x-model="serviceForm.name_vi"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Duration (min) *</label>
+                <input type="number" x-model.number="serviceForm.duration_min" min="15" required
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Price (NTD) *</label>
+                <input type="number" x-model.number="serviceForm.price" min="0" required
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                <input type="text" x-model="serviceForm.category" placeholder="general"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Sort Order</label>
+                <input type="number" x-model.number="serviceForm.sort_order"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div class="col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Image URL</label>
+                <input type="url" x-model="serviceForm.image_url"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div class="col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Description (Chinese)</label>
+                <textarea x-model="serviceForm.description" rows="2"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]"></textarea>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Agent Notes <span class="text-gray-400">(internal — not shown to customers)</span></label>
+                <textarea x-model="serviceForm.agent_notes" rows="2"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B86E78]"></textarea>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" x-model="serviceForm.is_available" id="svc_available"
+                  class="rounded border-gray-300" />
+                <label for="svc_available" class="text-xs font-medium text-gray-700">Available to book</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" x-model="serviceForm.in_carousel" id="svc_carousel"
+                  class="rounded border-gray-300" />
+                <label for="svc_carousel" class="text-xs font-medium text-gray-700">Show in LINE carousel</label>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="showServiceForm = false; editingServiceId = null"
+                class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
+              <button @click="saveService()"
+                class="bg-[#B86E78] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#a5606a]">
+                <span x-text="editingServiceId ? 'Update' : 'Create'"></span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- TAB:SERVICES:END -->
 
@@ -282,12 +424,65 @@ function adminApp() {
     },
     serviceMsg: '',
 
-    async loadServices() { /* STUB:loadServices */ },
-    openNewServiceForm() { /* STUB:openNewServiceForm */ },
-    openEditServiceForm(_svc) { /* STUB:openEditServiceForm */ },
-    async saveService() { /* STUB:saveService */ },
-    async toggleServiceField(_svc, _field) { /* STUB:toggleServiceField */ },
-    async deleteService(_id) { /* STUB:deleteService */ },
+    async loadServices() {
+      const res = await this.api('/admin/services');
+      if (res && res.ok) this.services = await res.json();
+    },
+    openNewServiceForm() {
+      this.editingServiceId = null;
+      this.serviceForm = {
+        name: '', name_en: '', name_tl: '', name_id: '', name_vi: '',
+        description: '', agent_notes: '', duration_min: 60, price: 0,
+        image_url: '', category: 'general', is_available: true, in_carousel: false, sort_order: 0,
+      };
+      this.showServiceForm = true;
+    },
+    openEditServiceForm(svc) {
+      this.editingServiceId = svc.id;
+      this.serviceForm = {
+        name: svc.name, name_en: svc.name_en, name_tl: svc.name_tl,
+        name_id: svc.name_id, name_vi: svc.name_vi, description: svc.description,
+        agent_notes: svc.agent_notes, duration_min: svc.duration_min, price: svc.price,
+        image_url: svc.image_url || '', category: svc.category,
+        is_available: svc.is_available, in_carousel: svc.in_carousel, sort_order: svc.sort_order,
+      };
+      this.showServiceForm = true;
+    },
+    async saveService() {
+      const url = this.editingServiceId
+        ? `/admin/services/${this.editingServiceId}` : '/admin/services';
+      const method = this.editingServiceId ? 'PUT' : 'POST';
+      const body = { ...this.serviceForm, image_url: this.serviceForm.image_url || null };
+      const res = await this.api(url, { method, body: JSON.stringify(body) });
+      if (res && res.ok) {
+        await this.loadServices();
+        this.showServiceForm = false;
+        this.editingServiceId = null;
+      }
+    },
+    async toggleServiceField(svc, field) {
+      const body = {
+        name: svc.name, name_en: svc.name_en, name_tl: svc.name_tl,
+        name_id: svc.name_id, name_vi: svc.name_vi, description: svc.description,
+        agent_notes: svc.agent_notes, duration_min: svc.duration_min, price: svc.price,
+        image_url: svc.image_url || null, category: svc.category,
+        is_available: svc.is_available, in_carousel: svc.in_carousel, sort_order: svc.sort_order,
+        [field]: !svc[field],
+      };
+      const res = await this.api(`/admin/services/${svc.id}`, { method: 'PUT', body: JSON.stringify(body) });
+      if (res && res.ok) svc[field] = !svc[field];
+    },
+    async deleteService(id) {
+      if (!confirm('Delete this service?')) return;
+      const res = await this.api(`/admin/services/${id}`, { method: 'DELETE' });
+      if (!res) return;
+      if (res.status === 409) {
+        this.serviceMsg = 'Cannot delete — service has existing appointments';
+        setTimeout(() => { this.serviceMsg = ''; }, 4000);
+        return;
+      }
+      if (res.ok || res.status === 204) this.services = this.services.filter(s => s.id !== id);
+    },
 
     // ── Portfolio ─────────────────────────────────────────────────────────
     portfolio: [],
