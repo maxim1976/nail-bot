@@ -1,4 +1,5 @@
 import os
+
 os.environ.setdefault("ADMIN_JWT_SECRET", "test-secret-key-for-testing-only-32ch")
 os.environ.setdefault("ADMIN_PASSWORD_HASH", "$2b$12$placeholder")
 os.environ.setdefault("ADMIN_USERNAME", "admin")
@@ -149,3 +150,41 @@ def test_reminder_uses_customer_language():
     mock_lc.push.assert_called_once()
     msg_text = mock_lc.push.call_args.kwargs["messages"][0].payload["text"]
     assert "tomorrow" in msg_text.lower() or "Reminder" in msg_text
+
+
+@freeze_time(_FROZEN_NOW)
+def test_push_failure_does_not_block_subsequent_reminders():
+    """If push fails for one appointment, others should still be reminded."""
+    svc_id1, svc_id2 = uuid.uuid4(), uuid.uuid4()
+    appt_id1, appt_id2 = uuid.uuid4(), uuid.uuid4()
+    with session_scope() as s:
+        s.merge(User(line_user_id="U_fail1", display_name="Fail1", preferred_language="zh"))
+        s.merge(User(line_user_id="U_ok2", display_name="Ok2", preferred_language="zh"))
+        s.add(Service(id=svc_id1, name="S1", duration_min=60, price=500, category="gel", sort_order=3))
+        s.add(Service(id=svc_id2, name="S2", duration_min=60, price=500, category="gel", sort_order=4))
+        s.add(Appointment(id=appt_id1, line_user_id="U_fail1", service_id=svc_id1,
+                          scheduled_at=_APPT_AT, duration_min=60, status="confirmed",
+                          customer_name="Fail1", reminder_sent=False))
+        s.add(Appointment(id=appt_id2, line_user_id="U_ok2", service_id=svc_id2,
+                          scheduled_at=_APPT_AT, duration_min=60, status="confirmed",
+                          customer_name="Ok2", reminder_sent=False))
+
+    call_count = 0
+    def push_side_effect(**kwargs):
+        nonlocal call_count
+        call_count += 1
+        if kwargs["line_user_id"] == "U_fail1":
+            raise Exception("LINE API error")
+
+    with patch("app.cron.LineClient") as MockClient:
+        mock_lc = MagicMock()
+        mock_lc.push.side_effect = push_side_effect
+        MockClient.return_value = mock_lc
+        send_24h_reminders()
+
+    assert call_count == 2  # both attempted
+    with session_scope() as s:
+        appt1 = s.get(Appointment, appt_id1)
+        appt2 = s.get(Appointment, appt_id2)
+        assert appt1.reminder_sent is False  # failed push — not marked
+        assert appt2.reminder_sent is True   # succeeded

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import zoneinfo
 from datetime import datetime, timedelta
 
@@ -9,6 +10,8 @@ from app.config import get_settings
 from app.db import session_scope
 from app.line_client import LineClient, ReplyMessage
 from app.models import Appointment, Service, User
+
+logger = logging.getLogger(__name__)
 
 _TZ = zoneinfo.ZoneInfo("Asia/Taipei")
 
@@ -57,14 +60,18 @@ def send_24h_reminders() -> None:
 
     client = LineClient(channel_access_token=settings.line_channel_access_token)
     for appt_id, line_user_id, time_str, service_name, lang in to_send:
-        template = _REMINDER_TEMPLATES.get(lang, _REMINDER_TEMPLATES["zh"])
-        text = template.format(time=time_str, service=service_name)
-        client.push(line_user_id=line_user_id, messages=[ReplyMessage.text(text)])
-        with session_scope() as s:
-            appt = s.get(Appointment, appt_id)
-            if appt:
-                appt.reminder_sent = True
-                s.flush()
+        try:
+            template = _REMINDER_TEMPLATES.get(lang, _REMINDER_TEMPLATES["zh"])
+            text = template.format(time=time_str, service=service_name)
+            client.push(line_user_id=line_user_id, messages=[ReplyMessage.text(text)])
+            with session_scope() as s:
+                appt = s.get(Appointment, appt_id)
+                if appt:
+                    appt.reminder_sent = True
+        except Exception:
+            logger.exception(
+                "Failed to send reminder for appointment %s", appt_id
+            )
 
 
 def send_morning_summary() -> None:
@@ -74,7 +81,7 @@ def send_morning_summary() -> None:
 
     now = datetime.now(_TZ)
     day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    day_end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+    day_end = day_start + timedelta(days=1)  # day_end exclusive — use < comparison
 
     with session_scope() as s:
         rows = s.execute(
@@ -82,7 +89,7 @@ def send_morning_summary() -> None:
             .join(Service, Appointment.service_id == Service.id)
             .where(
                 Appointment.scheduled_at >= day_start,
-                Appointment.scheduled_at <= day_end,
+                Appointment.scheduled_at < day_end,
                 Appointment.status == "confirmed",
             )
             .order_by(Appointment.scheduled_at)
