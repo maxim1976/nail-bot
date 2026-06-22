@@ -72,7 +72,70 @@
 
       <!-- TAB:STUDIO:START -->
       <div x-show="currentTab === 'studio'">
-        <p class="text-gray-400 text-sm">Studio Profile — coming in Task 2</p>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-[#241914]">Studio Profile</h2>
+          <span x-show="studioMsg" x-text="studioMsg"
+            class="text-green-700 text-sm bg-green-50 px-3 py-1 rounded-full"></span>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-6 max-w-2xl">
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Studio Name *</label>
+              <input type="text" x-model="studio.studio_name" required
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Owner Name</label>
+              <input type="text" x-model="studio.owner_name"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Address</label>
+              <input type="text" x-model="studio.address"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-[#241914] mb-1">Phone</label>
+                <input type="text" x-model="studio.phone"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#241914] mb-1">Instagram</label>
+                <input type="text" x-model="studio.instagram" placeholder="@handle"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Owner LINE User ID</label>
+              <input type="text" x-model="studio.owner_line_user_id" placeholder="Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Cancellation Policy</label>
+              <textarea x-model="studio.cancellation_policy" rows="3"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Aftercare Notes</label>
+              <textarea x-model="studio.aftercare_notes" rows="3"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">AI Persona Notes</label>
+              <p class="text-xs text-gray-400 mb-1">Free-form instructions for the booking assistant's tone</p>
+              <textarea x-model="studio.ai_persona_notes" rows="4"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]"></textarea>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end">
+            <button @click="saveStudio()" :disabled="studioSaving"
+              class="bg-[#B86E78] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#a5606a] disabled:opacity-50">
+              <span x-show="!studioSaving">Save</span>
+              <span x-show="studioSaving">Saving…</span>
+            </button>
+          </div>
+        </div>
       </div>
       <!-- TAB:STUDIO:END -->
 
@@ -189,8 +252,24 @@ function adminApp() {
     studioSaving: false,
     studioMsg: '',
 
-    async loadStudio() { /* STUB:loadStudio */ },
-    async saveStudio() { /* STUB:saveStudio */ },
+    async loadStudio() {
+      const res = await this.api('/admin/studio');
+      if (!res) return;
+      if (res.ok) this.studio = await res.json();
+      // 404 = no studio row yet; form stays at defaults
+    },
+    async saveStudio() {
+      this.studioSaving = true;
+      const res = await this.api('/admin/studio', {
+        method: 'PUT',
+        body: JSON.stringify(this.studio),
+      });
+      this.studioSaving = false;
+      if (res && res.ok) {
+        this.studioMsg = '✓ Saved';
+        setTimeout(() => { this.studioMsg = ''; }, 2500);
+      }
+    },
 
     // ── Services ──────────────────────────────────────────────────────────
     services: [],
