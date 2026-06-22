@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
+
+# Set environment variables before importing app
+os.environ.setdefault("ADMIN_JWT_SECRET", "test-secret-key-for-testing-only-32ch")
+os.environ.setdefault("ADMIN_PASSWORD_HASH", "$2b$12$placeholder")
+os.environ.setdefault("ADMIN_USERNAME", "admin")
 
 import jwt
 from fastapi.testclient import TestClient

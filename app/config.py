@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     admin_username: str = "admin"
     admin_password_hash: str = ""
-    admin_jwt_secret: str = ""
+    admin_jwt_secret: str
     admin_base_url: str = "http://localhost:8000"
 
     database_url: str

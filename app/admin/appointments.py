@@ -38,20 +38,19 @@ def list_appointments(
             end_dt = datetime.combine(to_date + timedelta(days=1), time.min, tzinfo=_TZ)
             q = q.where(Appointment.scheduled_at < end_dt)
         rows = s.execute(q).all()
-
-    return [
-        AdminAppointmentOut(
-            id=appt.id,
-            line_user_id=appt.line_user_id,
-            service_name=service_name,
-            scheduled_at=appt.scheduled_at,
-            duration_min=appt.duration_min,
-            status=appt.status,
-            customer_name=appt.customer_name,
-            notes=appt.notes,
-        )
-        for appt, service_name in rows
-    ]
+        return [
+            AdminAppointmentOut(
+                id=appt.id,
+                line_user_id=appt.line_user_id,
+                service_name=service_name,
+                scheduled_at=appt.scheduled_at,
+                duration_min=appt.duration_min,
+                status=appt.status,
+                customer_name=appt.customer_name,
+                notes=appt.notes,
+            )
+            for appt, service_name in rows
+        ]
 
 
 @router.put("/appointments/{appointment_id}", response_model=AdminAppointmentOut)
