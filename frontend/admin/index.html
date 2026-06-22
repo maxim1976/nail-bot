@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hualienvibe — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    body { background-color: #F4EDE5; color: #241914; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        rose: '#B86E78', gold: '#A6864F', cream: '#F4EDE5', ink: '#241914'
+      }}}
+    }
+  </script>
+</head>
+<body x-data="adminApp()" x-init="init()" x-cloak class="min-h-screen font-sans">
+
+  <!-- ── Login overlay ─────────────────────────────────────────────────── -->
+  <div x-show="!token" class="fixed inset-0 flex items-center justify-center bg-[#F4EDE5]">
+    <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-8">
+      <h1 class="text-2xl font-bold text-[#241914] mb-6 text-center">💅 Hualienvibe Admin</h1>
+      <form @submit.prevent="login()">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-[#241914] mb-1">Username</label>
+          <input type="text" x-model="loginForm.username" required autocomplete="username"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-[#241914] mb-1">Password</label>
+          <input type="password" x-model="loginForm.password" required autocomplete="current-password"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+        </div>
+        <p x-show="loginError" x-text="loginError" class="text-red-600 text-sm mb-3"></p>
+        <button type="submit" :disabled="loginLoading"
+          class="w-full bg-[#B86E78] text-white rounded-lg py-2 font-medium hover:bg-[#a5606a] disabled:opacity-50">
+          <span x-show="!loginLoading">Sign In</span>
+          <span x-show="loginLoading">Signing in…</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Dashboard shell ──────────────────────────────────────────────── -->
+  <div x-show="token" class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-52 bg-[#241914] text-white flex flex-col shrink-0">
+      <div class="p-6 border-b border-white/10">
+        <h1 class="text-lg font-bold">💅 Admin</h1>
+      </div>
+      <nav class="flex-1 p-4 space-y-1">
+        <template x-for="tab in tabs" :key="tab.id">
+          <button @click="switchTab(tab.id)"
+            :class="currentTab === tab.id ? 'bg-[#B86E78] text-white' : 'text-white/70 hover:bg-white/10'"
+            class="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors">
+            <span x-text="tab.icon + ' ' + tab.label"></span>
+          </button>
+        </template>
+      </nav>
+      <div class="p-4 border-t border-white/10">
+        <button @click="logout()" class="text-white/60 text-sm hover:text-white">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 overflow-auto p-8">
+
+      <!-- TAB:STUDIO:START -->
+      <div x-show="currentTab === 'studio'">
+        <p class="text-gray-400 text-sm">Studio Profile — coming in Task 2</p>
+      </div>
+      <!-- TAB:STUDIO:END -->
+
+      <!-- TAB:SERVICES:START -->
+      <div x-show="currentTab === 'services'">
+        <p class="text-gray-400 text-sm">Services — coming in Task 3</p>
+      </div>
+      <!-- TAB:SERVICES:END -->
+
+      <!-- TAB:PORTFOLIO:START -->
+      <div x-show="currentTab === 'portfolio'">
+        <p class="text-gray-400 text-sm">Portfolio — coming in Task 4</p>
+      </div>
+      <!-- TAB:PORTFOLIO:END -->
+
+      <!-- TAB:APPOINTMENTS:START -->
+      <div x-show="currentTab === 'appointments'">
+        <p class="text-gray-400 text-sm">Appointments — coming in Task 5</p>
+      </div>
+      <!-- TAB:APPOINTMENTS:END -->
+
+      <!-- TAB:SCHEDULE:START -->
+      <div x-show="currentTab === 'schedule'">
+        <p class="text-gray-400 text-sm">Schedule — coming in Task 6</p>
+      </div>
+      <!-- TAB:SCHEDULE:END -->
+
+    </main>
+  </div>
+
+<script>
+function adminApp() {
+  return {
+    // ── Auth ──────────────────────────────────────────────────────────────
+    token: localStorage.getItem('nail_admin_token') || '',
+    loginForm: { username: 'admin', password: '' },
+    loginError: '',
+    loginLoading: false,
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    currentTab: 'studio',
+    tabs: [
+      { id: 'studio',       icon: '🏠', label: 'Studio Profile' },
+      { id: 'services',     icon: '💅', label: 'Services' },
+      { id: 'portfolio',    icon: '🖼️',  label: 'Portfolio' },
+      { id: 'appointments', icon: '📅', label: 'Appointments' },
+      { id: 'schedule',     icon: '🗓️',  label: 'Schedule' },
+    ],
+
+    // ── HTTP helper ───────────────────────────────────────────────────────
+    // Auto-attaches bearer token. Logs out on 401/403. Returns Response or null.
+    async api(path, options = {}) {
+      const res = await fetch(path, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`,
+          ...(options.headers || {}),
+        },
+      });
+      if (res.status === 401 || res.status === 403) { this.logout(); return null; }
+      return res;
+    },
+
+    async login() {
+      this.loginLoading = true;
+      this.loginError = '';
+      try {
+        const res = await fetch('/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.loginForm),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          this.token = data.access_token;
+          localStorage.setItem('nail_admin_token', this.token);
+          await this.loadTab(this.currentTab);
+        } else {
+          this.loginError = 'Invalid username or password';
+        }
+      } finally {
+        this.loginLoading = false;
+      }
+    },
+
+    logout() {
+      this.token = '';
+      localStorage.removeItem('nail_admin_token');
+    },
+
+    async switchTab(tab) {
+      this.currentTab = tab;
+      await this.loadTab(tab);
+    },
+
+    async loadTab(tab) {
+      if      (tab === 'studio')       await this.loadStudio();
+      else if (tab === 'services')     await this.loadServices();
+      else if (tab === 'portfolio')    await this.loadPortfolio();
+      else if (tab === 'appointments') await this.loadAppointments();
+      else if (tab === 'schedule')     await this.loadSchedule();
+    },
+
+    async init() {
+      if (this.token) await this.loadTab(this.currentTab);
+    },
+
+    // ── Studio Profile ────────────────────────────────────────────────────
+    studio: {
+      studio_name: '', owner_name: '', address: '', phone: '', instagram: '',
+      cancellation_policy: '', aftercare_notes: '', ai_persona_notes: '', owner_line_user_id: '',
+    },
+    studioSaving: false,
+    studioMsg: '',
+
+    async loadStudio() { /* STUB:loadStudio */ },
+    async saveStudio() { /* STUB:saveStudio */ },
+
+    // ── Services ──────────────────────────────────────────────────────────
+    services: [],
+    showServiceForm: false,
+    editingServiceId: null,
+    serviceForm: {
+      name: '', name_en: '', name_tl: '', name_id: '', name_vi: '',
+      description: '', agent_notes: '', duration_min: 60, price: 0,
+      image_url: '', category: 'general', is_available: true, in_carousel: false, sort_order: 0,
+    },
+    serviceMsg: '',
+
+    async loadServices() { /* STUB:loadServices */ },
+    openNewServiceForm() { /* STUB:openNewServiceForm */ },
+    openEditServiceForm(_svc) { /* STUB:openEditServiceForm */ },
+    async saveService() { /* STUB:saveService */ },
+    async toggleServiceField(_svc, _field) { /* STUB:toggleServiceField */ },
+    async deleteService(_id) { /* STUB:deleteService */ },
+
+    // ── Portfolio ─────────────────────────────────────────────────────────
+    portfolio: [],
+    showPortfolioForm: false,
+    editingPortfolioId: null,
+    portfolioForm: { title: '', image_url: '', service_id: '', sort_order: 0, is_visible: true },
+    portfolioMsg: '',
+
+    async loadPortfolio() { /* STUB:loadPortfolio */ },
+    openNewPortfolioForm() { /* STUB:openNewPortfolioForm */ },
+    openEditPortfolioForm(_item) { /* STUB:openEditPortfolioForm */ },
+    async savePortfolioItem() { /* STUB:savePortfolioItem */ },
+    async togglePortfolioVisibility(_item) { /* STUB:togglePortfolioVisibility */ },
+    async deletePortfolioItem(_id) { /* STUB:deletePortfolioItem */ },
+
+    // ── Appointments ──────────────────────────────────────────────────────
+    appointments: [],
+    apptFilter: { status: '', from_date: '', to_date: '' },
+    apptMsg: '',
+
+    async loadAppointments() { /* STUB:loadAppointments */ },
+    async updateApptStatus(_appt, _status) { /* STUB:updateApptStatus */ },
+
+    // ── Schedule ──────────────────────────────────────────────────────────
+    weeklyTemplate: [],
+    dateOverrides: [],
+    overrideForm: { date: '', is_blocked: true, custom_start: '', custom_end: '' },
+    showOverrideForm: false,
+    scheduleMsg: '',
+
+    async loadSchedule() { /* STUB:loadSchedule */ },
+    async saveWeeklyDay(_day) { /* STUB:saveWeeklyDay */ },
+    async saveOverride() { /* STUB:saveOverride */ },
+    async deleteOverride(_date) { /* STUB:deleteOverride */ },
+  };
+}
+</script>
+</body>
+</html>

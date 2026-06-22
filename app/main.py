@@ -68,6 +68,10 @@ def create_app() -> FastAPI:
     if _liff_dist.exists():
         app.mount("/liff", StaticFiles(directory=_liff_dist, html=True), name="liff")
 
+    _admin_ui = Path(__file__).parent.parent / "frontend" / "admin"
+    if _admin_ui.exists():
+        app.mount("/dashboard", StaticFiles(directory=_admin_ui, html=True), name="admin_ui")
+
     return app
 
 
