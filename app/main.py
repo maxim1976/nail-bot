@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.admin.appointments import router as admin_appointments_router
@@ -139,7 +140,11 @@ def create_app() -> FastAPI:
 
     _landing = Path(__file__).parent / "assets" / "landing"
     if _landing.exists():
-        app.mount("/", StaticFiles(directory=_landing, html=True), name="landing")
+        app.mount("/uploads", StaticFiles(directory=_landing / "uploads"), name="landing_uploads")
+
+        @app.get("/")
+        async def landing_page() -> FileResponse:
+            return FileResponse(_landing / "index.html")
 
     return app
 
