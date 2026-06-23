@@ -137,6 +137,10 @@ def create_app() -> FastAPI:
     if _admin_ui.exists():
         app.mount("/dashboard", StaticFiles(directory=_admin_ui, html=True), name="admin_ui")
 
+    _landing = Path(__file__).parent / "assets" / "landing"
+    if _landing.exists():
+        app.mount("/", StaticFiles(directory=_landing, html=True), name="landing")
+
     return app
 
 
