@@ -127,3 +127,7 @@ class LineClient:
     def set_default_rich_menu(self, rich_menu_id: str) -> None:
         r = self._http.post(f"{self.BASE}/user/all/richmenu/{rich_menu_id}")
         r.raise_for_status()
+
+    def delete_rich_menu(self, rich_menu_id: str) -> None:
+        r = self._http.delete(f"{self.BASE}/richmenu/{rich_menu_id}")
+        r.raise_for_status()

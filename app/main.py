@@ -60,16 +60,24 @@ def _ensure_rich_menu() -> None:
     # Check if we already created one in a previous deploy
     try:
         existing = client.list_rich_menus()
-        for menu in existing:
-            if menu.get("name") == "Hualienvibe Main Menu":
-                rid: str = menu["richMenuId"]
+    except Exception:
+        logging.exception("could not list rich menus")
+        return
+
+    for menu in existing:
+        if menu.get("name") == "Hualienvibe Main Menu":
+            rid: str = menu["richMenuId"]
+            try:
                 client.set_default_rich_menu(rid)
                 _rich_menu_id_cache = rid
                 logging.info("rich menu reused: %s — set RICH_MENU_ID=%s in env to skip this step", rid, rid)
                 return
-    except Exception:
-        logging.exception("could not list rich menus")
-        return
+            except Exception:
+                logging.warning("existing menu %s has no image; deleting and recreating", rid)
+                try:
+                    client.delete_rich_menu(rid)
+                except Exception:
+                    pass
 
     # Create from bundled image
     if not _RICH_MENU_IMAGE.exists():
