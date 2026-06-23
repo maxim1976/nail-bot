@@ -1,645 +1,481 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>美甲到府 LINE 智慧助理</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hualienvibe — 美甲到府 LINE 智慧助理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;1,6..96,400;1,6..96,500&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap');
-
-  :root {
-    --cream: #FDF6F0;
-    --rose: #D88C9A;
-    --rose-deep: #C16E80;
-    --gold: #C9A66B;
-    --ink: #3A2E2A;
-    --sage: #7FA88F;
-    --white: #FFFFFF;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans TC', 'Noto Sans', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
-
-  .display {
-    font-family: 'Fraunces', serif;
-    font-optical-sizing: auto;
-  }
-
-  .lang-switch {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 100;
-    display: flex;
-    gap: 6px;
-    background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(8px);
-    padding: 6px;
-    border-radius: 999px;
-    box-shadow: 0 4px 20px rgba(58,46,42,0.08);
-  }
-
-  .lang-btn {
-    border: none;
-    background: transparent;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    color: var(--ink);
-    opacity: 0.5;
-    transition: all 0.25s ease;
-    font-family: inherit;
-  }
-
-  .lang-btn.active {
-    background: var(--rose);
-    color: white;
-    opacity: 1;
-  }
-
-  .stroke-divider {
-    position: relative;
-    height: 6px;
-    background: #E8DDD3;
-    border-radius: 3px;
-    overflow: hidden;
-    margin: 0 auto;
-  }
-
-  .stroke-fill {
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 0%;
-    background: linear-gradient(90deg, var(--rose) 0%, var(--gold) 100%);
-    border-radius: 3px;
-    transition: width 1.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .stroke-fill.painted { width: 100%; }
-
-  .hero {
-    min-height: 92vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 100px 8vw 60px;
-    position: relative;
-  }
-
-  .hero-eyebrow {
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rose-deep);
-    font-weight: 500;
-    margin-bottom: 20px;
-  }
-
-  .hero h1 {
-    font-size: clamp(2.4rem, 6vw, 4.6rem);
-    font-weight: 500;
-    line-height: 1.12;
-    max-width: 880px;
-    margin-bottom: 28px;
-    letter-spacing: -0.01em;
-  }
-
-  .hero h1 .accent { color: var(--rose); font-style: italic; }
-
-  .hero-sub {
-    font-size: clamp(1rem, 1.6vw, 1.2rem);
-    max-width: 560px;
-    color: #6B5C56;
-    margin-bottom: 12px;
-  }
-
-  .hero-stroke-wrap {
-    max-width: 280px;
-    margin: 28px 0 36px;
-  }
-
-  .hero-cta-group {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .btn-primary {
-    background: var(--ink);
-    color: var(--cream);
-    border: none;
-    padding: 16px 34px;
-    border-radius: 999px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: transform 0.2s ease, background 0.2s ease;
-  }
-
-  .btn-primary:hover { background: var(--rose-deep); transform: translateY(-2px); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--ink);
-    border: 1.5px solid var(--ink);
-    padding: 15px 30px;
-    border-radius: 999px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s ease;
-  }
-
-  .btn-ghost:hover { background: var(--ink); color: var(--cream); }
-
-  .chip-row {
-    position: absolute;
-    right: 6vw;
-    top: 18%;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .chip {
-    background: white;
-    border-radius: 16px;
-    padding: 14px 20px;
-    box-shadow: 0 12px 32px rgba(58,46,42,0.10);
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: float 5s ease-in-out infinite;
-  }
-
-  .chip:nth-child(2) { animation-delay: 1.2s; }
-  .chip:nth-child(3) { animation-delay: 2.4s; }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-
-  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-  section { padding: 90px 8vw; }
-
-  .section-label {
-    font-size: 13px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--rose-deep);
-    font-weight: 500;
-    margin-bottom: 14px;
-  }
-
-  .section-title {
-    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
-    font-weight: 500;
-    margin-bottom: 16px;
-    max-width: 640px;
-  }
-
-  .section-desc {
-    color: #6B5C56;
-    max-width: 520px;
-    margin-bottom: 50px;
-    font-size: 1.02rem;
-  }
-
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-  }
-
-  .feature-card {
-    background: white;
-    border-radius: 20px;
-    padding: 36px 30px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #F0E6DC;
-  }
-
-  .feature-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 40px rgba(58,46,42,0.08);
-  }
-
-  .feature-icon {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    margin-bottom: 20px;
-  }
-
-  .feature-card h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .feature-card p { color: #6B5C56; font-size: 0.94rem; }
-
-  .lang-band {
-    background: var(--ink);
-    color: var(--cream);
-    text-align: center;
-  }
-
-  .lang-band .section-label { color: var(--gold); }
-  .lang-band .section-title { color: var(--cream); margin: 0 auto 16px; }
-  .lang-band .section-desc { color: #C9BBB3; margin: 0 auto 50px; }
-
-  .pill-row {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    flex-wrap: wrap;
-  }
-
-  .pill {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 16px;
-    padding: 26px 32px;
-    min-width: 180px;
-  }
-
-  .pill .flag { font-size: 28px; margin-bottom: 10px; }
-  .pill .lang-name { font-weight: 600; font-size: 1rem; margin-bottom: 4px; }
-  .pill .lang-greeting { font-size: 0.85rem; color: #C9BBB3; font-style: italic; }
-
-  .demo-section { background: white; }
-  .demo-wrap {
-    display: grid;
-    grid-template-columns: 0.9fr 1.1fr;
-    gap: 60px;
-    align-items: center;
-  }
-
-  .phone-mock {
-    background: linear-gradient(160deg, #fff, #FBF2EC);
-    border-radius: 36px;
-    border: 10px solid var(--ink);
-    width: 320px;
-    margin: 0 auto;
-    overflow: hidden;
-    box-shadow: 0 30px 60px rgba(58,46,42,0.18);
-  }
-
-  .phone-header {
-    background: var(--rose);
-    color: white;
-    padding: 16px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .phone-header .avatar {
-    width: 28px; height: 28px;
-    background: white;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-  }
-
-  .phone-body {
-    padding: 18px;
-    min-height: 380px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .msg {
-    max-width: 80%;
-    padding: 11px 15px;
-    border-radius: 16px;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .msg.bot {
-    background: #F4ECE6;
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-  }
-
-  .msg.user {
-    background: var(--rose);
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-  }
-
-  .mini-list { list-style: none; margin-top: 24px; }
-  .mini-list li {
-    padding: 12px 0;
-    border-bottom: 1px solid #F0E6DC;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.95rem;
-  }
-  .mini-list li:last-child { border-bottom: none; }
-  .mini-list .check { color: var(--sage); font-weight: 700; }
-
-  .pricing-card {
-    background: linear-gradient(135deg, var(--ink), #4A3B36);
-    color: var(--cream);
-    border-radius: 28px;
-    padding: 56px 8vw;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .pricing-card::before {
-    content: '';
-    position: absolute;
-    top: -50%; right: -10%;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(216,140,154,0.25), transparent 70%);
-  }
-
-  .price-tag {
-    font-size: clamp(2.6rem, 6vw, 4rem);
-    font-weight: 500;
-    margin: 18px 0;
-    position: relative;
-  }
-
-  .price-tag span { font-size: 0.4em; color: var(--gold); }
-
-  footer {
-    padding: 50px 8vw;
-    text-align: center;
-    color: #9B8A82;
-    font-size: 0.85rem;
-  }
-
-  [data-i18n] { transition: opacity 0.2s ease; }
-
-  @media (max-width: 880px) {
-    .feature-grid { grid-template-columns: 1fr; }
-    .demo-wrap { grid-template-columns: 1fr; }
-    .chip-row { display: none; }
-    .pill-row { gap: 12px; }
-  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:#F4EDE5;-webkit-font-smoothing:antialiased}
+  @keyframes hv-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes hv-marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 </style>
 </head>
 <body>
+<div id="hv-root" style="font-family:'Noto Sans TC','Noto Sans',sans-serif;color:#241914;line-height:1.62;overflow-x:hidden;background:#F4EDE5">
 
-<div class="lang-switch">
-  <button class="lang-btn active" data-lang="zh">中文</button>
-  <button class="lang-btn" data-lang="tl">Tagalog</button>
-  <button class="lang-btn" data-lang="id">Indonesia</button>
-  <button class="lang-btn" data-lang="vi">Tiếng Việt</button>
+  <!-- NAV -->
+  <header style="position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 6vw;background:rgba(244,237,229,0.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(36,25,20,0.08)">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:'Bodoni Moda',serif;font-weight:600;font-size:21px;letter-spacing:0.01em;color:#241914">Hualienvibe</span>
+      <span style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#A6864F">Nails at Home</span>
+    </div>
+    <nav style="display:flex;flex-wrap:wrap;gap:2px;justify-content:flex-end">
+      <button class="lang-btn" data-lang="zh" style="border:none;background:transparent;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:#241914;font-family:inherit;letter-spacing:0.01em;transition:all .25s ease">中文</button>
+      <button class="lang-btn" data-lang="en" style="border:none;background:transparent;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:#241914;font-family:inherit;letter-spacing:0.01em;transition:all .25s ease">English</button>
+      <button class="lang-btn" data-lang="tl" style="border:none;background:transparent;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:#241914;font-family:inherit;letter-spacing:0.01em;transition:all .25s ease">Tagalog</button>
+      <button class="lang-btn" data-lang="id" style="border:none;background:transparent;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:#241914;font-family:inherit;letter-spacing:0.01em;transition:all .25s ease">Bahasa</button>
+      <button class="lang-btn" data-lang="vi" style="border:none;background:transparent;padding:8px 13px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:#241914;font-family:inherit;letter-spacing:0.01em;transition:all .25s ease">Tiếng Việt</button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section style="padding:150px 6vw 70px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:clamp(40px,5vw,84px);align-items:center;max-width:1320px;margin:0 auto">
+      <div data-reveal>
+        <div data-i18n="eyebrow" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#9E5460;font-weight:600;margin-bottom:26px">HUALIENVIBE — 美甲到府</div>
+        <h1 data-i18n="heroTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(2.5rem,5.4vw,4.7rem);line-height:1.08;letter-spacing:-0.01em;margin-bottom:30px;text-wrap:balance">讓客人用<span style="font-style:italic;color:#B86E78">自己的語言</span>，輕鬆預約美甲</h1>
+        <p data-i18n="heroSub" style="font-size:clamp(1rem,1.4vw,1.18rem);max-width:520px;color:#6E5C53;margin-bottom:34px">給移工姊妹的 LINE 智慧助理。中文、English、Tagalog、Bahasa、Tiếng Việt —— 一鍵切換，自動回覆、自動排班。</p>
+        <div style="max-width:300px;height:5px;background:#E4D7C9;border-radius:3px;overflow:hidden;margin-bottom:36px"><div id="hv-stroke" style="height:100%;width:0;background:linear-gradient(90deg,#B86E78,#A6864F);border-radius:3px;transition:width 1.5s cubic-bezier(.16,1,.3,1)"></div></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+          <a href="https://liff.line.me/2010475312-9NzG24s2" data-i18n="ctaPrimary" style="background:#241914;color:#F4EDE5;border:none;padding:16px 34px;border-radius:999px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;transition:transform .2s ease,background .2s ease">預約免費體驗</a>
+          <button data-i18n="ctaGhost" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})" style="background:transparent;color:#241914;border:1.5px solid rgba(36,25,20,0.35);padding:15px 28px;border-radius:999px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .2s ease">看示範對話</button>
+        </div>
+        <div data-i18n="trust" style="margin-top:30px;font-size:13px;letter-spacing:0.04em;color:#8A7468">花蓮製造 · 為移工姊妹的美甲事業而生</div>
+      </div>
+
+      <div data-reveal style="position:relative;justify-self:center">
+        <figure style="position:relative;width:min(460px,82vw);aspect-ratio:4/5;border-radius:8px;overflow:hidden;box-shadow:0 36px 70px rgba(36,25,20,0.22)">
+          <img src="uploads/kartik-gada--4iMX-4MIZ8-unsplash.jpg" alt="Manicured nails" style="width:100%;height:100%;object-fit:cover;display:block">
+        </figure>
+        <div style="position:absolute;left:-26px;bottom:34px;width:268px;max-width:78vw;background:rgba(255,255,255,0.96);backdrop-filter:blur(6px);border-radius:16px;padding:14px 16px;box-shadow:0 20px 44px rgba(36,25,20,0.18);display:flex;align-items:center;gap:12px;animation:hv-float 6s ease-in-out infinite">
+          <div style="width:38px;height:38px;border-radius:50%;background:#241914;color:#F4EDE5;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:14px;letter-spacing:0.02em;flex-shrink:0">HV</div>
+          <div style="min-width:0">
+            <div data-i18n="heroCardName" style="font-size:12px;font-weight:700;color:#241914">美甲到府助理</div>
+            <div data-i18n="heroCardMsg" style="font-size:12.5px;color:#6E5C53;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">您好，請問需要預約嗎？</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div style="overflow:hidden;border-top:1px solid rgba(36,25,20,0.14);border-bottom:1px solid rgba(36,25,20,0.14);padding:16px 0">
+    <div style="display:flex;gap:46px;width:max-content;white-space:nowrap;animation:hv-marquee 30s linear infinite;font-family:'Bodoni Moda','Noto Serif TC',serif;font-style:italic;font-size:clamp(18px,2.3vw,27px);color:#241914;opacity:0.82">
+      <span>日式光療</span><span style="color:#A6864F">—</span><span>Hand-painted</span><span style="color:#A6864F">—</span><span>到府服務</span><span style="color:#A6864F">—</span><span>Booking</span><span style="color:#A6864F">—</span><span>多語預約</span><span style="color:#A6864F">—</span><span>Nail Art</span><span style="color:#A6864F">—</span><span>季節主題</span><span style="color:#A6864F">—</span>
+      <span>日式光療</span><span style="color:#A6864F">—</span><span>Hand-painted</span><span style="color:#A6864F">—</span><span>到府服務</span><span style="color:#A6864F">—</span><span>Booking</span><span style="color:#A6864F">—</span><span>多語預約</span><span style="color:#A6864F">—</span><span>Nail Art</span><span style="color:#A6864F">—</span><span>季節主題</span><span style="color:#A6864F">—</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section style="padding:clamp(72px,9vw,118px) 6vw">
+    <div style="max-width:1240px;margin:0 auto">
+      <div data-reveal style="max-width:660px;margin-bottom:56px">
+        <div data-i18n="featLabel" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#9E5460;font-weight:600;margin-bottom:16px">核心功能</div>
+        <h2 data-i18n="featTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.16;margin-bottom:16px">三個模組，撐起整間工作室</h2>
+        <p data-i18n="featDesc" style="color:#6E5C53;font-size:1.04rem;max-width:520px">從第一句問候到完成預約，AI 全程陪伴客人，妳只需要專心做指甲。</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:22px">
+        <div data-reveal style="background:#FBF6F1;border:1px solid rgba(36,25,20,0.1);border-radius:8px;padding:36px 30px">
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:22px"><span style="font-family:'Bodoni Moda',serif;font-style:italic;font-size:40px;color:#A6864F;line-height:1">01</span><span style="flex:1;height:1px;background:rgba(36,25,20,0.16)"></span></div>
+          <h3 data-i18n="f1Title" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:1.4rem;font-weight:600;margin-bottom:10px">智慧預約</h3>
+          <p data-i18n="f1Desc" style="color:#6E5C53;font-size:0.96rem">客人在 LINE 直接選服務、選時段，系統自動避開衝突，即時通知妳確認。</p>
+        </div>
+        <div data-reveal style="background:#FBF6F1;border:1px solid rgba(36,25,20,0.1);border-radius:8px;padding:36px 30px">
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:22px"><span style="font-family:'Bodoni Moda',serif;font-style:italic;font-size:40px;color:#A6864F;line-height:1">02</span><span style="flex:1;height:1px;background:rgba(36,25,20,0.16)"></span></div>
+          <h3 data-i18n="f2Title" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:1.4rem;font-weight:600;margin-bottom:10px">作品型錄</h3>
+          <p data-i18n="f2Desc" style="color:#6E5C53;font-size:0.96rem">照片、價格、療程時間一目了然，客人滑一滑就能挑到喜歡的款式。</p>
+        </div>
+        <div data-reveal style="background:#FBF6F1;border:1px solid rgba(36,25,20,0.1);border-radius:8px;padding:36px 30px">
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:22px"><span style="font-family:'Bodoni Moda',serif;font-style:italic;font-size:40px;color:#A6864F;line-height:1">03</span><span style="flex:1;height:1px;background:rgba(36,25,20,0.16)"></span></div>
+          <h3 data-i18n="f3Title" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:1.4rem;font-weight:600;margin-bottom:10px">AI 多語客服</h3>
+          <p data-i18n="f3Desc" style="color:#6E5C53;font-size:0.96rem">價格、保養、能否到府，AI 用客人的母語即時回答，妳不用一直打字。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section style="padding:clamp(20px,3vw,40px) 6vw clamp(72px,9vw,118px)">
+    <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(36px,5vw,72px);align-items:center">
+      <figure data-reveal style="aspect-ratio:5/6;border-radius:8px;overflow:hidden;box-shadow:0 30px 60px rgba(36,25,20,0.18)">
+        <img src="uploads/giorgio-trovato-gb6gtiTZKB8-unsplash.jpg" alt="Manicure in progress" style="width:100%;height:100%;object-fit:cover;display:block">
+      </figure>
+      <div data-reveal>
+        <div data-i18n="procLabel" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#9E5460;font-weight:600;margin-bottom:16px">運作方式</div>
+        <h2 data-i18n="procTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.2vw,2.6rem);line-height:1.16;margin-bottom:14px">三步驟，客人自己完成預約</h2>
+        <p data-i18n="procDesc" style="color:#6E5C53;font-size:1.02rem;margin-bottom:34px;max-width:480px">妳不必守著手機，AI 會把客人一路帶到確認。</p>
+        <div style="display:flex;flex-direction:column">
+          <div style="display:flex;gap:20px;padding:22px 0;border-top:1px solid rgba(36,25,20,0.14)">
+            <span style="font-family:'Bodoni Moda',serif;font-style:italic;font-size:24px;color:#A6864F;flex-shrink:0;width:34px">01</span>
+            <div><h4 data-i18n="p1Title" style="font-size:1.06rem;font-weight:700;margin-bottom:5px">加入 LINE</h4><p data-i18n="p1Desc" style="color:#6E5C53;font-size:0.95rem">客人掃碼加入妳的官方帳號，立刻收到母語問候。</p></div>
+          </div>
+          <div style="display:flex;gap:20px;padding:22px 0;border-top:1px solid rgba(36,25,20,0.14)">
+            <span style="font-family:'Bodoni Moda',serif;font-style:italic;font-size:24px;color:#A6864F;flex-shrink:0;width:34px">02</span>
+            <div><h4 data-i18n="p2Title" style="font-size:1.06rem;font-weight:700;margin-bottom:5px">選服務與時段</h4><p data-i18n="p2Desc" style="color:#6E5C53;font-size:0.95rem">AI 提供可預約時間，客人點一點就完成選擇。</p></div>
+          </div>
+          <div style="display:flex;gap:20px;padding:22px 0;border-top:1px solid rgba(36,25,20,0.14);border-bottom:1px solid rgba(36,25,20,0.14)">
+            <span style="font-family:'Bodoni Moda',serif;font-style:italic;font-size:24px;color:#A6864F;flex-shrink:0;width:34px">03</span>
+            <div><h4 data-i18n="p3Title" style="font-size:1.06rem;font-weight:700;margin-bottom:5px">自動確認提醒</h4><p data-i18n="p3Desc" style="color:#6E5C53;font-size:0.95rem">系統同步妳的行事曆，發送確認與提醒，減少放鳥。</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section style="padding:clamp(72px,9vw,118px) 6vw;background:#EFE6DC">
+    <div style="max-width:1240px;margin:0 auto">
+      <div data-reveal style="max-width:640px;margin-bottom:52px">
+        <div data-i18n="galLabel" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#9E5460;font-weight:600;margin-bottom:16px">作品集</div>
+        <h2 data-i18n="galTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.16;margin-bottom:14px">讓妳的手藝，自己說話</h2>
+        <p data-i18n="galDesc" style="color:#6E5C53;font-size:1.02rem;max-width:500px">把最好的作品放進型錄，客人預約前就先愛上。</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;align-items:start">
+        <figure data-reveal style="position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;box-shadow:0 22px 46px rgba(36,25,20,0.14)">
+          <img src="uploads/zain-ali-zZ6Y78ANoEI-unsplash.jpg" alt="Winter nail art" style="width:100%;height:100%;object-fit:cover;display:block">
+          <figcaption style="position:absolute;left:16px;bottom:14px;color:#fff;font-size:13px;letter-spacing:0.08em;text-shadow:0 2px 12px rgba(0,0,0,0.5)"><span style="font-family:'Bodoni Moda',serif;font-style:italic;opacity:0.85">01 / </span><span data-i18n="g1">日式光療</span></figcaption>
+        </figure>
+        <figure data-reveal style="position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;box-shadow:0 22px 46px rgba(36,25,20,0.14);margin-top:44px">
+          <img src="uploads/kingsley-hemans-51-4BSipn7E-unsplash.jpg" alt="Hand-painted nails" style="width:100%;height:100%;object-fit:cover;display:block">
+          <figcaption style="position:absolute;left:16px;bottom:14px;color:#fff;font-size:13px;letter-spacing:0.08em;text-shadow:0 2px 12px rgba(0,0,0,0.5)"><span style="font-family:'Bodoni Moda',serif;font-style:italic;opacity:0.85">02 / </span><span data-i18n="g2">手繪設計</span></figcaption>
+        </figure>
+        <figure data-reveal style="position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;box-shadow:0 22px 46px rgba(36,25,20,0.14)">
+          <img src="uploads/h-co-OpjlRo-31SI-unsplash.jpg" alt="Polish color wall" style="width:100%;height:100%;object-fit:cover;display:block">
+          <figcaption style="position:absolute;left:16px;bottom:14px;color:#fff;font-size:13px;letter-spacing:0.08em;text-shadow:0 2px 12px rgba(0,0,0,0.5)"><span style="font-family:'Bodoni Moda',serif;font-style:italic;opacity:0.85">03 / </span><span data-i18n="g3">色彩牆</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATMOSPHERE -->
+  <section style="position:relative;min-height:46vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:clamp(70px,10vw,130px) 8vw;overflow:hidden">
+    <img src="uploads/nico-8IK1OrkMzMQ-unsplash.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,12,8,0.62),rgba(20,12,8,0.72))"></div>
+    <p data-reveal data-i18n="moodLine" style="position:relative;font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-style:italic;font-size:clamp(1.5rem,3.4vw,2.8rem);line-height:1.3;color:#F4EDE5;max-width:880px;text-wrap:balance">美，值得用每一種語言好好對待。</p>
+  </section>
+
+  <!-- LANGUAGE BAND -->
+  <section style="padding:clamp(72px,9vw,118px) 6vw;background:#241914;color:#EFE3D7;text-align:center">
+    <div data-reveal style="max-width:680px;margin:0 auto 52px">
+      <div data-i18n="langLabel" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#A6864F;font-weight:600;margin-bottom:16px">語言支援</div>
+      <h2 data-i18n="langTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.16;color:#F4EDE5;margin-bottom:14px">五種語言，一個助理</h2>
+      <p data-i18n="langDesc" style="color:#C3B4A8;font-size:1.02rem;max-width:480px;margin:0 auto">妳的客人來自哪裡，AI 就用哪裡的話跟她聊天。</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;max-width:1100px;margin:0 auto;text-align:left">
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.13);border-radius:12px;padding:24px 22px"><div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#A6864F;margin-bottom:10px">TW</div><div style="font-weight:600;font-size:1.02rem;margin-bottom:8px">繁體中文</div><div style="font-size:0.86rem;color:#C3B4A8;font-style:italic">您好，請問需要預約嗎？</div></div>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.13);border-radius:12px;padding:24px 22px"><div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#A6864F;margin-bottom:10px">EN</div><div style="font-weight:600;font-size:1.02rem;margin-bottom:8px">English</div><div style="font-size:0.86rem;color:#C3B4A8;font-style:italic">Hi! Would you like to book?</div></div>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.13);border-radius:12px;padding:24px 22px"><div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#A6864F;margin-bottom:10px">PH</div><div style="font-weight:600;font-size:1.02rem;margin-bottom:8px">Tagalog</div><div style="font-size:0.86rem;color:#C3B4A8;font-style:italic">Kumusta! Gusto mo bang mag-book?</div></div>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.13);border-radius:12px;padding:24px 22px"><div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#A6864F;margin-bottom:10px">ID</div><div style="font-weight:600;font-size:1.02rem;margin-bottom:8px">Bahasa Indonesia</div><div style="font-size:0.86rem;color:#C3B4A8;font-style:italic">Halo! Mau booking jadwal?</div></div>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.13);border-radius:12px;padding:24px 22px"><div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#A6864F;margin-bottom:10px">VN</div><div style="font-weight:600;font-size:1.02rem;margin-bottom:8px">Tiếng Việt</div><div style="font-size:0.86rem;color:#C3B4A8;font-style:italic">Xin chào! Bạn muốn đặt lịch không?</div></div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="demo-section" style="padding:clamp(72px,9vw,118px) 6vw;background:#FBF6F1">
+    <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(40px,6vw,80px);align-items:center">
+      <div data-reveal style="justify-self:center">
+        <div style="width:320px;max-width:84vw;background:linear-gradient(165deg,#fff,#FBF2EC);border-radius:38px;border:9px solid #241914;overflow:hidden;box-shadow:0 34px 64px rgba(36,25,20,0.22)">
+          <div style="background:#9E5460;color:#fff;padding:15px 18px;display:flex;align-items:center;gap:11px">
+            <div style="width:30px;height:30px;border-radius:50%;background:#F4EDE5;color:#241914;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:12px">HV</div>
+            <span data-i18n="phoneTitle" style="font-size:14px;font-weight:600">美甲到府助理</span>
+          </div>
+          <div id="hv-chat" style="padding:18px;min-height:362px;display:flex;flex-direction:column;gap:11px"></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #EFE0D4">
+            <div style="flex:1;background:#F1E7DE;border-radius:999px;padding:9px 14px;font-size:12.5px;color:#A2917F">輸入訊息…</div>
+            <div style="width:32px;height:32px;border-radius:50%;background:#241914;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="color:#F4EDE5;font-size:13px">→</span></div>
+          </div>
+        </div>
+      </div>
+      <div data-reveal>
+        <div data-i18n="demoLabel" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#9E5460;font-weight:600;margin-bottom:16px">示範對話</div>
+        <h2 data-i18n="demoTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.2vw,2.6rem);line-height:1.16;margin-bottom:12px">看看 AI 怎麼接客</h2>
+        <p data-i18n="demoDesc" style="color:#6E5C53;font-size:1.02rem;margin-bottom:22px;max-width:460px">點上方語言鍵，看同一段對話如何自動換語言。</p>
+        <ul style="list-style:none">
+          <li style="display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid rgba(36,25,20,0.12);font-size:0.97rem"><span style="color:#A6864F;font-weight:700">✓</span><span data-i18n="li1">24 小時自動回覆，不漏接任何客人</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid rgba(36,25,20,0.12);font-size:0.97rem"><span style="color:#A6864F;font-weight:700">✓</span><span data-i18n="li2">自動同步妳的可預約時段</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid rgba(36,25,20,0.12);font-size:0.97rem"><span style="color:#A6864F;font-weight:700">✓</span><span data-i18n="li3">常見問題（保養、價格、地點）秒回</span></li>
+          <li style="display:flex;gap:12px;align-items:flex-start;padding:13px 0;font-size:0.97rem"><span style="color:#A6864F;font-weight:700">✓</span><span data-i18n="li4">後台一眼看懂今天、本週排程</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section style="padding:clamp(72px,9vw,118px) 6vw">
+    <div style="max-width:1240px;margin:0 auto">
+      <div data-reveal style="text-align:center;max-width:620px;margin:0 auto 52px">
+        <div data-i18n="testLabel" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#9E5460;font-weight:600;margin-bottom:16px">姊妹的話</div>
+        <h2 data-i18n="testTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.16">她們已經這樣接客</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:22px">
+        <figure data-reveal style="background:#FBF6F1;border:1px solid rgba(36,25,20,0.1);border-radius:8px;padding:34px 30px">
+          <div style="font-family:'Bodoni Moda',serif;font-size:54px;line-height:0.6;color:#A6864F;height:26px">"</div>
+          <blockquote data-i18n="t1Quote" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:1.14rem;line-height:1.5;color:#241914;margin-bottom:22px">客人不用會中文也能預約，我每天少打好多字。</blockquote>
+          <figcaption style="display:flex;align-items:center;gap:12px;border-top:1px solid rgba(36,25,20,0.12);padding-top:16px"><div style="width:38px;height:38px;border-radius:50%;background:#9E5460;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:15px">M</div><div><div data-i18n="t1Name" style="font-weight:700;font-size:0.95rem">Maria</div><div data-i18n="t1Role" style="font-size:0.82rem;color:#8A7468">台中 · 來自菲律賓</div></div></figcaption>
+        </figure>
+        <figure data-reveal style="background:#FBF6F1;border:1px solid rgba(36,25,20,0.1);border-radius:8px;padding:34px 30px">
+          <div style="font-family:'Bodoni Moda',serif;font-size:54px;line-height:0.6;color:#A6864F;height:26px">"</div>
+          <blockquote data-i18n="t2Quote" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:1.14rem;line-height:1.5;color:#241914;margin-bottom:22px">晚上睡覺也有人幫我回訊息，隔天打開全是確認好的預約。</blockquote>
+          <figcaption style="display:flex;align-items:center;gap:12px;border-top:1px solid rgba(36,25,20,0.12);padding-top:16px"><div style="width:38px;height:38px;border-radius:50%;background:#A6864F;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:15px">D</div><div><div data-i18n="t2Name" style="font-weight:700;font-size:0.95rem">Dewi</div><div data-i18n="t2Role" style="font-size:0.82rem;color:#8A7468">桃園 · 來自印尼</div></div></figcaption>
+        </figure>
+        <figure data-reveal style="background:#FBF6F1;border:1px solid rgba(36,25,20,0.1);border-radius:8px;padding:34px 30px">
+          <div style="font-family:'Bodoni Moda',serif;font-size:54px;line-height:0.6;color:#A6864F;height:26px">"</div>
+          <blockquote data-i18n="t3Quote" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:1.14rem;line-height:1.5;color:#241914;margin-bottom:22px">客人說用自己的語言預約，感覺被尊重，回頭客變多了。</blockquote>
+          <figcaption style="display:flex;align-items:center;gap:12px;border-top:1px solid rgba(36,25,20,0.12);padding-top:16px"><div style="width:38px;height:38px;border-radius:50%;background:#B86E78;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bodoni Moda',serif;font-size:15px">L</div><div><div data-i18n="t3Name" style="font-weight:700;font-size:0.95rem">Linh</div><div data-i18n="t3Role" style="font-size:0.82rem;color:#8A7468">新北 · 來自越南</div></div></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section style="padding:0 6vw clamp(72px,9vw,118px)">
+    <div data-reveal style="max-width:1080px;margin:0 auto;background:linear-gradient(135deg,#241914,#3E2D25);color:#EFE3D7;border-radius:20px;padding:clamp(48px,6vw,72px) 8vw;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-40%;right:-8%;width:420px;height:420px;background:radial-gradient(circle,rgba(184,110,120,0.28),transparent 70%);pointer-events:none"></div>
+      <div data-i18n="priceLabel" style="position:relative;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#A6864F;font-weight:600;margin-bottom:16px">給工作室的方案</div>
+      <h2 data-i18n="priceTitle" style="position:relative;font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.8rem,3.4vw,2.6rem);color:#F4EDE5;margin-bottom:8px">一次建置，長期接客</h2>
+      <div style="position:relative;font-family:'Bodoni Moda','Noto Serif TC',serif;font-size:clamp(2.6rem,6vw,4rem);font-weight:500;margin:18px 0">NT$18,000<span data-i18n="priceFrom" style="font-size:0.34em;color:#A6864F"> 起</span></div>
+      <p data-i18n="priceDesc" style="position:relative;color:#C3B4A8;max-width:480px;margin:0 auto 30px">含 LINE Bot 開發、多語 AI 設定、後台管理、品牌形象頁。3–7 天交付。</p>
+      <a href="https://liff.line.me/2010475312-9NzG24s2" data-i18n="priceCta" style="position:relative;background:#F4EDE5;color:#241914;border:none;padding:16px 36px;border-radius:999px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;transition:transform .2s ease">預約免費諮詢</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:#EFE6DC;padding:clamp(64px,8vw,100px) 6vw 48px;text-align:center">
+    <h2 data-reveal data-i18n="footCtaTitle" style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.8rem);line-height:1.18;max-width:720px;margin:0 auto 28px;text-wrap:balance">準備好讓 AI 幫妳接客了嗎？</h2>
+    <a href="https://liff.line.me/2010475312-9NzG24s2" data-i18n="footCtaBtn" style="background:#241914;color:#F4EDE5;border:none;padding:17px 38px;border-radius:999px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;transition:transform .2s ease,background .2s ease;margin-bottom:54px">預約免費體驗</a>
+    <div style="border-top:1px solid rgba(36,25,20,0.14);padding-top:28px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center">
+      <span style="font-family:'Bodoni Moda',serif;font-weight:600;font-size:17px">Hualienvibe</span>
+      <span data-i18n="footer" style="font-size:0.84rem;color:#8A7468">Hualienvibe Digital Studio · 花蓮製造，為移工姊妹的美甲事業而生</span>
+    </div>
+  </footer>
+
 </div>
 
-<section class="hero">
-  <div class="chip-row">
-    <div class="chip"><span class="dot" style="background:var(--rose)"></span><span data-i18n="chip1">日式光療</span></div>
-    <div class="chip"><span class="dot" style="background:var(--gold)"></span><span data-i18n="chip2">手繪美甲</span></div>
-    <div class="chip"><span class="dot" style="background:var(--sage)"></span><span data-i18n="chip3">到府服務</span></div>
-  </div>
-
-  <div class="hero-eyebrow" data-i18n="eyebrow">HUALIENVIBE × 美甲到府</div>
-  <h1 class="display" data-i18n="heroTitle">讓客人用<span class="accent">自己的語言</span><br>輕鬆預約美甲</h1>
-  <p class="hero-sub" data-i18n="heroSub">給移工姊妹們的 LINE 智慧助理 —— 中文、Tagalog、Bahasa Indonesia、Tiếng Việt，一鍵切換，自動回覆、自動排班。</p>
-
-  <div class="hero-stroke-wrap">
-    <div class="stroke-divider"><div class="stroke-fill" id="heroStroke"></div></div>
-  </div>
-
-  <div class="hero-cta-group">
-    <a href="https://liff.line.me/2010475312-9NzG24s2" class="btn-primary" data-i18n="ctaPrimary" style="text-decoration:none;display:inline-block">預約免費體驗</a>
-    <button class="btn-ghost" data-i18n="ctaGhost" onclick="document.querySelector('.demo-section').scrollIntoView({behavior:'smooth'})">查看示範對話 ↓</button>
-  </div>
-</section>
-
-<section>
-  <div class="section-label" data-i18n="featLabel">核心功能</div>
-  <h2 class="section-title display" data-i18n="featTitle">三個模組，撐起整間工作室</h2>
-  <p class="section-desc" data-i18n="featDesc">從第一句問候到完成預約，AI 全程陪伴客人，妳只需要專心做指甲。</p>
-
-  <div class="feature-grid">
-    <div class="feature-card">
-      <div class="feature-icon" style="background:#FBE4E8;">📅</div>
-      <h3 data-i18n="f1Title">智慧預約</h3>
-      <p data-i18n="f1Desc">客人在 LINE 直接選服務、選時段，系統自動避開衝突，即時通知妳確認。</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon" style="background:#F3E8D4;">💅</div>
-      <h3 data-i18n="f2Title">作品型錄</h3>
-      <p data-i18n="f2Desc">照片、價格、療程時間一目了然，客人滑一滑就能挑到喜歡的款式。</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon" style="background:#E3EEE7;">🤖</div>
-      <h3 data-i18n="f3Title">AI 多語客服</h3>
-      <p data-i18n="f3Desc">價格、保養方式、能否到府，AI 用客人的母語即時回答，妳不用一直打字。</p>
-    </div>
-  </div>
-</section>
-
-<section class="lang-band">
-  <div class="section-label" data-i18n="langLabel">語言支援</div>
-  <h2 class="section-title display" data-i18n="langTitle">四種語言，一個機器人</h2>
-  <p class="section-desc" data-i18n="langDesc">妳的客人來自哪裡，AI 就用哪裡的話跟她聊天。</p>
-
-  <div class="pill-row">
-    <div class="pill">
-      <div class="flag">🇹🇼</div>
-      <div class="lang-name">繁體中文</div>
-      <div class="lang-greeting">您好，請問需要預約嗎？</div>
-    </div>
-    <div class="pill">
-      <div class="flag">🇵🇭</div>
-      <div class="lang-name">Tagalog</div>
-      <div class="lang-greeting">Kumusta! Gusto mo bang mag-book?</div>
-    </div>
-    <div class="pill">
-      <div class="flag">🇮🇩</div>
-      <div class="lang-name">Bahasa Indonesia</div>
-      <div class="lang-greeting">Halo! Mau booking jadwal?</div>
-    </div>
-    <div class="pill">
-      <div class="flag">🇻🇳</div>
-      <div class="lang-name">Tiếng Việt</div>
-      <div class="lang-greeting">Xin chào! Bạn muốn đặt lịch không?</div>
-    </div>
-  </div>
-</section>
-
-<section class="demo-section">
-  <div class="demo-wrap">
-    <div class="phone-mock">
-      <div class="phone-header">
-        <div class="avatar">💅</div>
-        <span data-i18n="phoneTitle">美甲到府助理</span>
-      </div>
-      <div class="phone-body" id="chatBody"></div>
-    </div>
-
-    <div class="demo-text">
-      <div class="section-label" data-i18n="demoLabel">示範對話</div>
-      <h2 class="section-title display" data-i18n="demoTitle">看看 AI 怎麼接客</h2>
-      <p class="section-desc" data-i18n="demoDesc" style="margin-bottom:8px;">點擊上方語言切換鍵，看同一段對話如何自動換語言。</p>
-
-      <ul class="mini-list">
-        <li><span class="check">✓</span><span data-i18n="li1">24 小時自動回覆，不漏接任何客人</span></li>
-        <li><span class="check">✓</span><span data-i18n="li2">自動同步妳的可預約時段</span></li>
-        <li><span class="check">✓</span><span data-i18n="li3">常見問題（保養、價格、地點）秒回</span></li>
-        <li><span class="check">✓</span><span data-i18n="li4">後台一眼看懂今天、本週排程</span></li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="pricing-card">
-    <div class="section-label" style="color:var(--gold)" data-i18n="priceLabel">給工作室的方案</div>
-    <h2 class="section-title display" style="color:var(--cream); margin:0 auto;" data-i18n="priceTitle">一次建置，長期接客</h2>
-    <div class="price-tag">NT$18,000<span data-i18n="priceFrom"> 起</span></div>
-    <p style="color:#C9BBB3; max-width:480px; margin:0 auto 30px;" data-i18n="priceDesc">含 LINE Bot 開發、多語 AI 設定、後台管理、品牌形象頁。3–7 天交付。</p>
-    <a href="https://liff.line.me/2010475312-9NzG24s2" class="btn-primary" data-i18n="priceCta" style="text-decoration:none;display:inline-block">預約免費諮詢</a>
-  </div>
-</section>
-
-<footer>
-  <span data-i18n="footer">Hualienvibe Digital Studio · 花蓮製造，為移工姊妹的美甲事業而生</span>
-</footer>
-
 <script>
-const translations = {
+const T = {
   zh: {
-    chip1: "日式光療", chip2: "手繪美甲", chip3: "到府服務",
-    eyebrow: "HUALIENVIBE × 美甲到府",
-    heroTitle: '讓客人用<span class="accent">自己的語言</span><br>輕鬆預約美甲',
-    heroSub: "給移工姊妹們的 LINE 智慧助理 —— 中文、Tagalog、Bahasa Indonesia、Tiếng Việt，一鍵切換，自動回覆、自動排班。",
-    ctaPrimary: "預約免費體驗", ctaGhost: "查看示範對話 ↓",
-    featLabel: "核心功能", featTitle: "三個模組，撐起整間工作室",
-    featDesc: "從第一句問候到完成預約，AI 全程陪伴客人，妳只需要專心做指甲。",
-    f1Title: "智慧預約", f1Desc: "客人在 LINE 直接選服務、選時段，系統自動避開衝突，即時通知妳確認。",
-    f2Title: "作品型錄", f2Desc: "照片、價格、療程時間一目了然，客人滑一滑就能挑到喜歡的款式。",
-    f3Title: "AI 多語客服", f3Desc: "價格、保養方式、能否到府，AI 用客人的母語即時回答，妳不用一直打字。",
-    langLabel: "語言支援", langTitle: "四種語言，一個機器人", langDesc: "妳的客人來自哪裡，AI 就用哪裡的話跟她聊天。",
-    phoneTitle: "美甲到府助理",
-    demoLabel: "示範對話", demoTitle: "看看 AI 怎麼接客",
-    demoDesc: "點擊上方語言切換鍵，看同一段對話如何自動換語言。",
-    li1: "24 小時自動回覆，不漏接任何客人", li2: "自動同步妳的可預約時段",
-    li3: "常見問題（保養、價格、地點）秒回", li4: "後台一眼看懂今天、本週排程",
-    priceLabel: "給工作室的方案", priceTitle: "一次建置，長期接客",
-    priceFrom: " 起", priceDesc: "含 LINE Bot 開發、多語 AI 設定、後台管理、品牌形象頁。3–7 天交付。",
-    priceCta: "預約免費諮詢",
-    footer: "Hualienvibe Digital Studio · 花蓮製造，為移工姊妹的美甲事業而生",
+    eyebrow: 'HUALIENVIBE — 美甲到府',
+    heroTitle: '讓客人用<span style="font-style:italic;color:#B86E78">自己的語言</span>，輕鬆預約美甲',
+    heroSub: '給移工姊妹的 LINE 智慧助理。中文、English、Tagalog、Bahasa、Tiếng Việt —— 一鍵切換，自動回覆、自動排班。',
+    ctaPrimary: '預約免費體驗', ctaGhost: '看示範對話',
+    trust: '花蓮製造 · 為移工姊妹的美甲事業而生',
+    heroCardName: '美甲到府助理', heroCardMsg: '您好，請問需要預約嗎？',
+    featLabel: '核心功能', featTitle: '三個模組，撐起整間工作室',
+    featDesc: '從第一句問候到完成預約，AI 全程陪伴客人，妳只需要專心做指甲。',
+    f1Title: '智慧預約', f1Desc: '客人在 LINE 直接選服務、選時段，系統自動避開衝突，即時通知妳確認。',
+    f2Title: '作品型錄', f2Desc: '照片、價格、療程時間一目了然，客人滑一滑就能挑到喜歡的款式。',
+    f3Title: 'AI 多語客服', f3Desc: '價格、保養、能否到府，AI 用客人的母語即時回答，妳不用一直打字。',
+    procLabel: '運作方式', procTitle: '三步驟，客人自己完成預約',
+    procDesc: '妳不必守著手機，AI 會把客人一路帶到確認。',
+    p1Title: '加入 LINE', p1Desc: '客人掃碼加入妳的官方帳號，立刻收到母語問候。',
+    p2Title: '選服務與時段', p2Desc: 'AI 提供可預約時間，客人點一點就完成選擇。',
+    p3Title: '自動確認提醒', p3Desc: '系統同步妳的行事曆，發送確認與提醒，減少放鳥。',
+    galLabel: '作品集', galTitle: '讓妳的手藝，自己說話',
+    galDesc: '把最好的作品放進型錄，客人預約前就先愛上。',
+    g1: '日式光療', g2: '手繪設計', g3: '色彩牆',
+    moodLine: '美，值得用每一種語言好好對待。',
+    langLabel: '語言支援', langTitle: '五種語言，一個助理',
+    langDesc: '妳的客人來自哪裡，AI 就用哪裡的話跟她聊天。',
+    phoneTitle: '美甲到府助理',
+    demoLabel: '示範對話', demoTitle: '看看 AI 怎麼接客',
+    demoDesc: '點上方語言鍵，看同一段對話如何自動換語言。',
+    li1: '24 小時自動回覆，不漏接任何客人', li2: '自動同步妳的可預約時段',
+    li3: '常見問題（保養、價格、地點）秒回', li4: '後台一眼看懂今天、本週排程',
+    testLabel: '姊妹的話', testTitle: '她們已經這樣接客',
+    t1Quote: '客人不用會中文也能預約，我每天少打好多字。', t1Name: 'Maria', t1Role: '台中 · 來自菲律賓',
+    t2Quote: '晚上睡覺也有人幫我回訊息，隔天打開全是確認好的預約。', t2Name: 'Dewi', t2Role: '桃園 · 來自印尼',
+    t3Quote: '客人說用自己的語言預約，感覺被尊重，回頭客變多了。', t3Name: 'Linh', t3Role: '新北 · 來自越南',
+    priceLabel: '給工作室的方案', priceTitle: '一次建置，長期接客',
+    priceFrom: ' 起', priceDesc: '含 LINE Bot 開發、多語 AI 設定、後台管理、品牌形象頁。3–7 天交付。',
+    priceCta: '預約免費諮詢',
+    footCtaTitle: '準備好讓 AI 幫妳接客了嗎？', footCtaBtn: '預約免費體驗',
+    footer: 'Hualienvibe Digital Studio · 花蓮製造，為移工姊妹的美甲事業而生',
     chat: [
-      {who:'user', text:'你好，我想預約禮拜六做光療'},
-      {who:'bot', text:'您好！💅 禮拜六我們有 10:00、14:00、16:30 三個時段，請問您方便哪一個呢？'},
-      {who:'user', text:'14:00 可以，大概多少錢？'},
-      {who:'bot', text:'日式光療單色 $800，手繪款式 $1200 起。需要到府服務的話加收車馬費 $200 喔！已幫您保留 14:00 ✨'},
+      { who: 'user', text: '你好，我想預約禮拜六做光療' },
+      { who: 'bot', text: '您好！禮拜六我們有 10:00、14:00、16:30 三個時段，您方便哪一個呢？' },
+      { who: 'user', text: '14:00 可以，大概多少錢？' },
+      { who: 'bot', text: '日式光療單色 $800，手繪款式 $1200 起。需要到府服務加收 $200。已幫您保留 14:00。' }
+    ]
+  },
+  en: {
+    eyebrow: 'HUALIENVIBE — NAILS AT HOME',
+    heroTitle: 'Let clients book in <span style="font-style:italic;color:#B86E78">their own language</span>',
+    heroSub: 'A LINE smart assistant for migrant sisters. Mandarin, English, Tagalog, Bahasa, Tiếng Việt — switch in one tap. Auto-reply, auto-schedule.',
+    ctaPrimary: 'Book a Free Demo', ctaGhost: 'See a sample chat',
+    trust: 'Made in Hualien · Built for migrant sisters’ nail businesses',
+    heroCardName: 'Nail Home Assistant', heroCardMsg: 'Hi! Would you like to book?',
+    featLabel: 'Core Features', featTitle: 'Three modules, one whole studio',
+    featDesc: 'From the first hello to a confirmed booking, AI walks your client through — you just do nails.',
+    f1Title: 'Smart Booking', f1Desc: 'Clients pick a service and time right in LINE. The system avoids conflicts and notifies you instantly.',
+    f2Title: 'Work Catalog', f2Desc: 'Photos, prices, durations — all clear. Clients swipe to find the look they love.',
+    f3Title: 'Multilingual AI', f3Desc: 'Price, care, home service — AI answers in the client’s own language, so you’re not always typing.',
+    procLabel: 'How It Works', procTitle: 'Three steps, clients book themselves',
+    procDesc: 'No need to guard your phone — AI carries the client all the way to confirmed.',
+    p1Title: 'Add on LINE', p1Desc: 'Clients scan to add your official account and get a greeting in their language.',
+    p2Title: 'Pick service & time', p2Desc: 'AI offers open slots; a few taps and the booking is done.',
+    p3Title: 'Auto confirm & remind', p3Desc: 'It syncs your calendar, sends confirmations and reminders — fewer no-shows.',
+    galLabel: 'Portfolio', galTitle: 'Let your work speak for itself',
+    galDesc: 'Put your best sets in the catalog — clients fall for them before they book.',
+    g1: 'Japanese Gel', g2: 'Hand-painted', g3: 'Color Wall',
+    moodLine: 'Beauty deserves care — in every language.',
+    langLabel: 'Languages', langTitle: 'Five languages, one assistant',
+    langDesc: 'Wherever your client is from, AI chats in that language.',
+    phoneTitle: 'Nail Home Assistant',
+    demoLabel: 'Sample Chat', demoTitle: 'See how AI greets clients',
+    demoDesc: 'Tap a language above to watch the same chat switch automatically.',
+    li1: '24-hour auto-reply, never miss a client', li2: 'Auto-syncs with your open times',
+    li3: 'Instant answers to FAQs (care, price, location)', li4: 'Dashboard shows today and this week at a glance',
+    testLabel: 'Sisters’ Words', testTitle: 'They’re already booking this way',
+    t1Quote: 'Clients can book without knowing Mandarin — I type so much less every day.', t1Name: 'Maria', t1Role: 'Taichung · from the Philippines',
+    t2Quote: 'Someone replies while I sleep; I wake up to a day of confirmed bookings.', t2Name: 'Dewi', t2Role: 'Taoyuan · from Indonesia',
+    t3Quote: 'Clients feel respected booking in their own language — more come back.', t3Name: 'Linh', t3Role: 'New Taipei · from Vietnam',
+    priceLabel: 'Plan for Studios', priceTitle: 'Build once, book for years',
+    priceFrom: ' and up', priceDesc: 'Includes LINE Bot build, multilingual AI setup, dashboard, and brand page. Delivered in 3–7 days.',
+    priceCta: 'Book a Free Consult',
+    footCtaTitle: 'Ready to let AI greet your clients?', footCtaBtn: 'Book a Free Demo',
+    footer: 'Hualienvibe Digital Studio · Made in Hualien, for migrant sisters in the nail trade',
+    chat: [
+      { who: 'user', text: 'Hi, I’d like to book gel this Saturday' },
+      { who: 'bot', text: 'Hello! On Saturday we have 10:00, 14:00 and 16:30 open. Which works for you?' },
+      { who: 'user', text: '14:00 works. How much is it?' },
+      { who: 'bot', text: 'Japanese gel solid color is $800, hand-painted from $1200. Home service adds $200. I’ve held 14:00 for you.' }
     ]
   },
   tl: {
-    chip1: "Japanese Gel", chip2: "Hand-painted Nail Art", chip3: "Home Service",
-    eyebrow: "HUALIENVIBE × Nail sa Bahay",
-    heroTitle: 'Hayaan ang mga kliyente na mag-book gamit ang <span class="accent">sariling wika</span> nila',
-    heroSub: "LINE AI assistant para sa mga kapatid na OFW — Mandarin, Tagalog, Bahasa Indonesia, Tiếng Việt, isang click lang lilipat. Auto-reply, auto-schedule.",
-    ctaPrimary: "Mag-book ng Libreng Demo", ctaGhost: "Tingnan ang Sample Chat ↓",
-    featLabel: "Pangunahing Tampok", featTitle: "Tatlong module, isang buong studio",
-    featDesc: "Mula sa unang 'kumusta' hanggang sa kumpirmadong booking, kasama mo ang AI — ikaw lang ang mag-focus sa kuko.",
-    f1Title: "Matalinong Booking", f1Desc: "Pipili ang kliyente ng serbisyo at oras direkta sa LINE, awtomatikong iiwasan ang conflict, agad kang mae-notify.",
-    f2Title: "Catalog ng mga Gawa", f2Desc: "Mga larawan, presyo, at tagal — malinaw lahat. Mag-swipe lang ang kliyente para makahanap ng gusto.",
-    f3Title: "Multi-language AI Support", f3Desc: "Presyo, pag-aalaga, kung pwede sa bahay — sasagutin ng AI sa sariling wika ng kliyente, hindi mo na kailangan mag-type palagi.",
-    langLabel: "Suporta sa Wika", langTitle: "Apat na wika, isang bot", langDesc: "Kahit saan galing ang kliyente mo, doon din makikipag-usap ang AI.",
-    phoneTitle: "Nail Assistant",
-    demoLabel: "Sample Chat", demoTitle: "Tingnan kung paano kumausap ang AI",
-    demoDesc: "Pindutin ang language switch sa itaas para makita kung paano awtomatikong nagbabago ang parehong usapan.",
-    li1: "24-oras na auto-reply, walang nawawalang kliyente", li2: "Awtomatikong naka-sync sa available mong oras",
-    li3: "Mabilis na sagot sa FAQ (pag-aalaga, presyo, lokasyon)", li4: "Madaling makita ang schedule sa dashboard",
-    priceLabel: "Plano para sa Studio", priceTitle: "Isang beses gawin, panghabang-buhay gamitin",
-    priceFrom: " pataas", priceDesc: "Kasama ang LINE Bot, multi-language AI setup, dashboard, at brand page. 3–7 araw lang.",
-    priceCta: "Mag-book ng Libreng Konsultasyon",
-    footer: "Hualienvibe Digital Studio · Ginawa sa Hualien, para sa nail business ng mga kapatid na OFW",
+    eyebrow: 'HUALIENVIBE — NAIL SA BAHAY',
+    heroTitle: 'Hayaan ang mga kliyente na mag-book gamit ang <span style="font-style:italic;color:#B86E78">sariling wika</span> nila',
+    heroSub: 'LINE AI assistant para sa mga kapatid na OFW — Mandarin, English, Tagalog, Bahasa, Tiếng Việt, isang click lang lilipat. Auto-reply, auto-schedule.',
+    ctaPrimary: 'Mag-book ng Libreng Demo', ctaGhost: 'Tingnan ang sample chat',
+    trust: 'Gawa sa Hualien · Para sa nail business ng mga kapatid na OFW',
+    heroCardName: 'Nail Assistant', heroCardMsg: 'Kumusta! Gusto mo bang mag-book?',
+    featLabel: 'Pangunahing Tampok', featTitle: 'Tatlong module, isang buong studio',
+    featDesc: 'Mula sa unang kumusta hanggang sa kumpirmadong booking, kasama mo ang AI — ikaw lang ang mag-focus sa kuko.',
+    f1Title: 'Matalinong Booking', f1Desc: 'Pipili ang kliyente ng serbisyo at oras direkta sa LINE, awtomatikong iiwasan ang conflict, agad kang mae-notify.',
+    f2Title: 'Catalog ng mga Gawa', f2Desc: 'Mga larawan, presyo, at tagal — malinaw lahat. Mag-swipe lang ang kliyente para makahanap ng gusto.',
+    f3Title: 'Multi-language AI', f3Desc: 'Presyo, pag-aalaga, kung pwede sa bahay — sasagutin ng AI sa sariling wika ng kliyente, hindi mo na kailangang mag-type palagi.',
+    procLabel: 'Paano Gumagana', procTitle: 'Tatlong hakbang, sila na mismo ang magbu-book',
+    procDesc: 'Di mo na kailangang bantayan ang phone — AI ang bahala hanggang kumpirmado.',
+    p1Title: 'Mag-add sa LINE', p1Desc: 'I-scan ng kliyente ang official account mo, may greeting agad sa wika nila.',
+    p2Title: 'Pumili ng serbisyo at oras', p2Desc: 'Magbibigay ang AI ng bakanteng oras; ilang pindot, tapos na.',
+    p3Title: 'Auto-kumpirma at paalala', p3Desc: 'Naka-sync sa calendar mo, nagpapadala ng kumpirmasyon at reminder, mas kaunting no-show.',
+    galLabel: 'Portfolio', galTitle: 'Hayaang magsalita ang gawa mo',
+    galDesc: 'Ilagay ang pinakamagagandang gawa sa catalog — mahuhumaling sila bago pa mag-book.',
+    g1: 'Japanese Gel', g2: 'Hand-painted', g3: 'Color Wall',
+    moodLine: 'Ang ganda ay karapat-dapat sa malasakit — sa bawat wika.',
+    langLabel: 'Suporta sa Wika', langTitle: 'Limang wika, isang assistant',
+    langDesc: 'Kahit saan galing ang kliyente mo, doon din makikipag-usap ang AI.',
+    phoneTitle: 'Nail Assistant',
+    demoLabel: 'Sample Chat', demoTitle: 'Tingnan kung paano kumausap ang AI',
+    demoDesc: 'Pindutin ang language switch sa itaas para makita ang parehong usapan na awtomatikong nagbabago.',
+    li1: '24-oras na auto-reply, walang nawawalang kliyente', li2: 'Awtomatikong naka-sync sa available mong oras',
+    li3: 'Mabilis na sagot sa FAQ (pag-aalaga, presyo, lokasyon)', li4: 'Madaling makita ang schedule sa dashboard',
+    testLabel: 'Sabi ng mga Kapatid', testTitle: 'Ganito na sila nagbu-book ngayon',
+    t1Quote: 'Pwedeng mag-book kahit di marunong mag-Mandarin — sobrang bawas sa pagta-type ko araw-araw.', t1Name: 'Maria', t1Role: 'Taichung · galing Pilipinas',
+    t2Quote: 'May sumasagot habang tulog ako; paggising ko, puno na ng kumpirmadong booking.', t2Name: 'Dewi', t2Role: 'Taoyuan · galing Indonesia',
+    t3Quote: 'Nirerespeto raw sila kapag nag-book sa sariling wika — mas dumadami ang balik na kliyente.', t3Name: 'Linh', t3Role: 'New Taipei · galing Vietnam',
+    priceLabel: 'Plano para sa Studio', priceTitle: 'Isang beses gawin, panghabang-buhay gamitin',
+    priceFrom: ' pataas', priceDesc: 'Kasama ang LINE Bot, multi-language AI setup, dashboard, at brand page. 3–7 araw lang.',
+    priceCta: 'Mag-book ng Libreng Konsultasyon',
+    footCtaTitle: 'Handa nang ipaubaya sa AI ang pagtanggap ng kliyente?', footCtaBtn: 'Mag-book ng Libreng Demo',
+    footer: 'Hualienvibe Digital Studio · Ginawa sa Hualien, para sa nail business ng mga kapatid na OFW',
     chat: [
-      {who:'user', text:'Kumusta, gusto ko mag-book ng gel sa Sabado'},
-      {who:'bot', text:'Kumusta po! 💅 May available kami sa Sabado: 10:00, 14:00, 16:30. Alin po ang gusto niyo?'},
-      {who:'user', text:'14:00 pwede, magkano po?'},
-      {who:'bot', text:'Japanese gel solid color $800, hand-painted design simula $1200. May home service din, dagdag $200 lang. Na-book na ang 14:00 niyo ✨'},
+      { who: 'user', text: 'Kumusta, gusto ko mag-book ng gel sa Sabado' },
+      { who: 'bot', text: 'Kumusta po! May available kami sa Sabado: 10:00, 14:00, 16:30. Alin po ang gusto niyo?' },
+      { who: 'user', text: '14:00 pwede, magkano po?' },
+      { who: 'bot', text: 'Japanese gel solid color $800, hand-painted simula $1200. May home service din, dagdag $200. Na-book na ang 14:00 niyo.' }
     ]
   },
   id: {
-    chip1: "Gel Jepang", chip2: "Nail Art Lukis Tangan", chip3: "Layanan ke Rumah",
-    eyebrow: "HUALIENVIBE × Nail Panggilan",
-    heroTitle: 'Biarkan pelanggan booking dengan <span class="accent">bahasa mereka sendiri</span>',
-    heroSub: "Asisten AI LINE untuk para pekerja migran — Mandarin, Tagalog, Bahasa Indonesia, Tiếng Việt, ganti dengan satu klik. Auto-reply, auto-jadwal.",
-    ctaPrimary: "Booking Demo Gratis", ctaGhost: "Lihat Contoh Chat ↓",
-    featLabel: "Fitur Utama", featTitle: "Tiga modul, satu studio lengkap",
-    featDesc: "Dari sapaan pertama sampai booking selesai, AI menemani pelanggan — kamu fokus saja ke kuku.",
-    f1Title: "Booking Cerdas", f1Desc: "Pelanggan pilih layanan dan jadwal langsung di LINE, sistem otomatis hindari bentrok, kamu langsung dapat notifikasi.",
-    f2Title: "Katalog Karya", f2Desc: "Foto, harga, durasi — semua jelas. Pelanggan tinggal geser untuk pilih desain favorit.",
-    f3Title: "AI Multi-bahasa", f3Desc: "Harga, perawatan, layanan ke rumah — AI jawab pakai bahasa pelanggan sendiri, kamu nggak perlu ketik terus.",
-    langLabel: "Dukungan Bahasa", langTitle: "Empat bahasa, satu bot", langDesc: "Dari mana pun pelanggan kamu berasal, AI akan bicara dengan bahasa itu.",
-    phoneTitle: "Asisten Nail",
-    demoLabel: "Contoh Chat", demoTitle: "Lihat cara AI melayani pelanggan",
-    demoDesc: "Klik tombol ganti bahasa di atas untuk lihat percakapan yang sama berubah bahasa otomatis.",
-    li1: "Auto-reply 24 jam, tidak ada pelanggan terlewat", li2: "Otomatis sinkron dengan jadwal kosong kamu",
-    li3: "FAQ (perawatan, harga, lokasi) dijawab cepat", li4: "Dashboard mudah dibaca untuk jadwal harian/mingguan",
-    priceLabel: "Paket untuk Studio", priceTitle: "Bangun sekali, pakai selamanya",
-    priceFrom: " mulai dari", priceDesc: "Termasuk LINE Bot, setup AI multi-bahasa, dashboard, dan halaman brand. Selesai 3–7 hari.",
-    priceCta: "Booking Konsultasi Gratis",
-    footer: "Hualienvibe Digital Studio · Dibuat di Hualien, untuk bisnis nail para pekerja migran",
+    eyebrow: 'HUALIENVIBE — NAIL PANGGILAN',
+    heroTitle: 'Biarkan pelanggan booking dengan <span style="font-style:italic;color:#B86E78">bahasa mereka sendiri</span>',
+    heroSub: 'Asisten AI LINE untuk para pekerja migran — Mandarin, English, Tagalog, Bahasa, Tiếng Việt, ganti dengan satu klik. Auto-reply, auto-jadwal.',
+    ctaPrimary: 'Booking Demo Gratis', ctaGhost: 'Lihat contoh chat',
+    trust: 'Dibuat di Hualien · Untuk bisnis nail para pekerja migran',
+    heroCardName: 'Asisten Nail', heroCardMsg: 'Halo! Mau booking jadwal?',
+    featLabel: 'Fitur Utama', featTitle: 'Tiga modul, satu studio lengkap',
+    featDesc: 'Dari sapaan pertama sampai booking selesai, AI menemani pelanggan — kamu fokus saja ke kuku.',
+    f1Title: 'Booking Cerdas', f1Desc: 'Pelanggan pilih layanan dan jadwal langsung di LINE, sistem otomatis hindari bentrok, kamu langsung dapat notifikasi.',
+    f2Title: 'Katalog Karya', f2Desc: 'Foto, harga, durasi — semua jelas. Pelanggan tinggal geser untuk pilih desain favorit.',
+    f3Title: 'AI Multi-bahasa', f3Desc: 'Harga, perawatan, layanan ke rumah — AI jawab pakai bahasa pelanggan sendiri, kamu nggak perlu ketik terus.',
+    procLabel: 'Cara Kerja', procTitle: 'Tiga langkah, pelanggan booking sendiri',
+    procDesc: 'Nggak perlu jagain HP — AI yang antar pelanggan sampai terkonfirmasi.',
+    p1Title: 'Tambah di LINE', p1Desc: 'Pelanggan scan untuk tambah akun resmimu, langsung dapat sapaan bahasanya.',
+    p2Title: 'Pilih layanan & jadwal', p2Desc: 'AI tawarkan slot kosong; beberapa ketuk, selesai.',
+    p3Title: 'Konfirmasi & pengingat otomatis', p3Desc: 'Sinkron dengan kalendermu, kirim konfirmasi dan pengingat, lebih sedikit yang batal.',
+    galLabel: 'Portofolio', galTitle: 'Biarkan karyamu yang bicara',
+    galDesc: 'Taruh karya terbaik di katalog — pelanggan jatuh cinta sebelum booking.',
+    g1: 'Gel Jepang', g2: 'Lukis Tangan', g3: 'Dinding Warna',
+    moodLine: 'Kecantikan layak dirawat — dalam setiap bahasa.',
+    langLabel: 'Dukungan Bahasa', langTitle: 'Lima bahasa, satu asisten',
+    langDesc: 'Dari mana pun pelanggan kamu berasal, AI akan bicara dengan bahasa itu.',
+    phoneTitle: 'Asisten Nail',
+    demoLabel: 'Contoh Chat', demoTitle: 'Lihat cara AI melayani pelanggan',
+    demoDesc: 'Klik tombol ganti bahasa di atas untuk lihat percakapan yang sama berubah bahasa otomatis.',
+    li1: 'Auto-reply 24 jam, tidak ada pelanggan terlewat', li2: 'Otomatis sinkron dengan jadwal kosong kamu',
+    li3: 'FAQ (perawatan, harga, lokasi) dijawab cepat', li4: 'Dashboard mudah dibaca untuk jadwal harian/mingguan',
+    testLabel: 'Kata Para Saudari', testTitle: 'Mereka sudah booking dengan cara ini',
+    t1Quote: 'Pelanggan bisa booking tanpa bisa Mandarin — ketikku jauh berkurang tiap hari.', t1Name: 'Maria', t1Role: 'Taichung · dari Filipina',
+    t2Quote: 'Ada yang balas saat aku tidur; bangun-bangun penuh booking terkonfirmasi.', t2Name: 'Dewi', t2Role: 'Taoyuan · dari Indonesia',
+    t3Quote: 'Pelanggan merasa dihargai booking pakai bahasa sendiri — makin banyak yang balik.', t3Name: 'Linh', t3Role: 'New Taipei · dari Vietnam',
+    priceLabel: 'Paket untuk Studio', priceTitle: 'Bangun sekali, pakai selamanya',
+    priceFrom: ' mulai dari', priceDesc: 'Termasuk LINE Bot, setup AI multi-bahasa, dashboard, dan halaman brand. Selesai 3–7 hari.',
+    priceCta: 'Booking Konsultasi Gratis',
+    footCtaTitle: 'Siap biarkan AI menyambut pelangganmu?', footCtaBtn: 'Booking Demo Gratis',
+    footer: 'Hualienvibe Digital Studio · Dibuat di Hualien, untuk bisnis nail para pekerja migran',
     chat: [
-      {who:'user', text:'Halo, mau booking gel hari Sabtu'},
-      {who:'bot', text:'Halo! 💅 Sabtu ada slot jam 10:00, 14:00, 16:30. Mau pilih yang mana?'},
-      {who:'user', text:'14:00 bisa, harganya berapa ya?'},
-      {who:'bot', text:'Gel Jepang warna polos $800, nail art lukis tangan mulai $1200. Layanan ke rumah tambah $200 saja. Jam 14:00 sudah saya simpan untuk kamu ✨'},
+      { who: 'user', text: 'Halo, mau booking gel hari Sabtu' },
+      { who: 'bot', text: 'Halo! Sabtu ada slot jam 10:00, 14:00, 16:30. Mau pilih yang mana?' },
+      { who: 'user', text: '14:00 bisa, harganya berapa ya?' },
+      { who: 'bot', text: 'Gel Jepang warna polos $800, lukis tangan mulai $1200. Layanan ke rumah tambah $200. Jam 14:00 sudah saya simpan untuk kamu.' }
     ]
   },
   vi: {
-    chip1: "Gel Nhật Bản", chip2: "Vẽ Móng Thủ Công", chip3: "Dịch Vụ Tận Nhà",
-    eyebrow: "HUALIENVIBE × Làm Móng Tận Nhà",
-    heroTitle: 'Để khách đặt lịch bằng <span class="accent">ngôn ngữ của họ</span>',
-    heroSub: "Trợ lý AI LINE dành cho chị em lao động xa nhà — Tiếng Trung, Tagalog, Bahasa Indonesia, Tiếng Việt, chuyển đổi một chạm. Tự động trả lời, tự động xếp lịch.",
-    ctaPrimary: "Đặt Lịch Dùng Thử Miễn Phí", ctaGhost: "Xem Đoạn Chat Mẫu ↓",
-    featLabel: "Tính Năng Chính", featTitle: "Ba mô-đun, một tiệm trọn vẹn",
-    featDesc: "Từ lời chào đầu tiên đến khi đặt lịch xong, AI luôn đồng hành cùng khách — bạn chỉ cần tập trung làm móng.",
-    f1Title: "Đặt Lịch Thông Minh", f1Desc: "Khách chọn dịch vụ và giờ ngay trên LINE, hệ thống tự tránh trùng lịch, bạn được báo ngay để xác nhận.",
-    f2Title: "Bộ Sưu Tập Mẫu", f2Desc: "Ảnh, giá, thời gian làm — rõ ràng hết. Khách chỉ cần vuốt là chọn được mẫu ưng ý.",
-    f3Title: "AI Hỗ Trợ Đa Ngôn Ngữ", f3Desc: "Giá cả, cách chăm sóc, có làm tận nhà không — AI trả lời ngay bằng tiếng mẹ đẻ của khách, bạn không cần gõ liên tục.",
-    langLabel: "Hỗ Trợ Ngôn Ngữ", langTitle: "Bốn ngôn ngữ, một bot", langDesc: "Khách của bạn đến từ đâu, AI sẽ nói chuyện bằng ngôn ngữ đó.",
-    phoneTitle: "Trợ Lý Làm Móng",
-    demoLabel: "Đoạn Chat Mẫu", demoTitle: "Xem AI tiếp khách như thế nào",
-    demoDesc: "Nhấn nút đổi ngôn ngữ phía trên để xem cùng một đoạn hội thoại tự động đổi ngôn ngữ.",
-    li1: "Tự động trả lời 24/24, không bỏ lỡ khách nào", li2: "Tự động đồng bộ lịch trống của bạn",
-    li3: "Trả lời nhanh các câu hỏi thường gặp (chăm sóc, giá, địa điểm)", li4: "Bảng điều khiển dễ xem lịch hôm nay/tuần này",
-    priceLabel: "Gói Cho Tiệm", priceTitle: "Xây một lần, dùng lâu dài",
-    priceFrom: " trở lên", priceDesc: "Bao gồm LINE Bot, thiết lập AI đa ngôn ngữ, bảng quản trị, trang thương hiệu. Hoàn thành 3–7 ngày.",
-    priceCta: "Đặt Lịch Tư Vấn Miễn Phí",
-    footer: "Hualienvibe Digital Studio · Sản xuất tại Hualien, dành cho chị em lao động làm nghề móng",
+    eyebrow: 'HUALIENVIBE — LÀM MÓNG TẬN NHÀ',
+    heroTitle: 'Để khách đặt lịch bằng <span style="font-style:italic;color:#B86E78">ngôn ngữ của họ</span>',
+    heroSub: 'Trợ lý AI LINE dành cho chị em lao động xa nhà — Tiếng Trung, English, Tagalog, Bahasa, Tiếng Việt, chuyển đổi một chạm. Tự động trả lời, tự động xếp lịch.',
+    ctaPrimary: 'Đặt Lịch Dùng Thử Miễn Phí', ctaGhost: 'Xem đoạn chat mẫu',
+    trust: 'Sản xuất tại Hualien · Vì sự nghiệp làm móng của chị em lao động xa nhà',
+    heroCardName: 'Trợ Lý Làm Móng', heroCardMsg: 'Xin chào! Bạn muốn đặt lịch không?',
+    featLabel: 'Tính Năng Chính', featTitle: 'Ba mô-đun, một tiệm trọn vẹn',
+    featDesc: 'Từ lời chào đầu tiên đến khi đặt lịch xong, AI luôn đồng hành cùng khách — bạn chỉ cần tập trung làm móng.',
+    f1Title: 'Đặt Lịch Thông Minh', f1Desc: 'Khách chọn dịch vụ và giờ ngay trên LINE, hệ thống tự tránh trùng lịch, bạn được báo ngay để xác nhận.',
+    f2Title: 'Bộ Sưu Tập Mẫu', f2Desc: 'Ảnh, giá, thời gian làm — rõ ràng hết. Khách chỉ cần vuốt là chọn được mẫu ưng ý.',
+    f3Title: 'AI Hỗ Trợ Đa Ngôn Ngữ', f3Desc: 'Giá cả, cách chăm sóc, có làm tận nhà không — AI trả lời ngay bằng tiếng mẹ đẻ của khách, bạn không cần gõ liên tục.',
+    procLabel: 'Cách Hoạt Động', procTitle: 'Ba bước, khách tự đặt lịch',
+    procDesc: 'Bạn không cần canh điện thoại — AI dẫn khách đến tận lúc xác nhận.',
+    p1Title: 'Thêm trên LINE', p1Desc: 'Khách quét mã thêm tài khoản của bạn, nhận lời chào bằng tiếng mẹ đẻ.',
+    p2Title: 'Chọn dịch vụ & giờ', p2Desc: 'AI đưa ra khung giờ trống; vài chạm là xong.',
+    p3Title: 'Tự xác nhận & nhắc lịch', p3Desc: 'Đồng bộ lịch của bạn, gửi xác nhận và nhắc nhở, bớt khách quên hẹn.',
+    galLabel: 'Bộ Sưu Tập', galTitle: 'Hãy để tay nghề tự lên tiếng',
+    galDesc: 'Đưa mẫu đẹp nhất vào danh mục — khách mê trước cả khi đặt lịch.',
+    g1: 'Gel Nhật', g2: 'Vẽ Tay', g3: 'Tường Màu',
+    moodLine: 'Cái đẹp xứng đáng được chăm chút — bằng mọi ngôn ngữ.',
+    langLabel: 'Hỗ Trợ Ngôn Ngữ', langTitle: 'Năm ngôn ngữ, một trợ lý',
+    langDesc: 'Khách của bạn đến từ đâu, AI sẽ nói chuyện bằng ngôn ngữ đó.',
+    phoneTitle: 'Trợ Lý Làm Móng',
+    demoLabel: 'Đoạn Chat Mẫu', demoTitle: 'Xem AI tiếp khách như thế nào',
+    demoDesc: 'Nhấn nút đổi ngôn ngữ phía trên để xem cùng một đoạn hội thoại tự động đổi ngôn ngữ.',
+    li1: 'Tự động trả lời 24/24, không bỏ lỡ khách nào', li2: 'Tự động đồng bộ lịch trống của bạn',
+    li3: 'Trả lời nhanh câu hỏi thường gặp (chăm sóc, giá, địa điểm)', li4: 'Bảng điều khiển dễ xem lịch hôm nay/tuần này',
+    testLabel: 'Lời Của Chị Em', testTitle: 'Họ đã đón khách theo cách này',
+    t1Quote: 'Khách không cần biết tiếng Trung vẫn đặt được — mỗi ngày mình gõ ít hẳn.', t1Name: 'Maria', t1Role: 'Đài Trung · đến từ Philippines',
+    t2Quote: 'Có người trả lời lúc mình ngủ; sáng dậy là cả ngày lịch đã xác nhận.', t2Name: 'Dewi', t2Role: 'Đào Viên · đến từ Indonesia',
+    t3Quote: 'Khách thấy được tôn trọng khi đặt bằng tiếng của họ — khách quay lại nhiều hơn.', t3Name: 'Linh', t3Role: 'Tân Bắc · đến từ Việt Nam',
+    priceLabel: 'Gói Cho Tiệm', priceTitle: 'Xây một lần, dùng lâu dài',
+    priceFrom: ' trở lên', priceDesc: 'Bao gồm LINE Bot, thiết lập AI đa ngôn ngữ, bảng quản trị, trang thương hiệu. Hoàn thành 3–7 ngày.',
+    priceCta: 'Đặt Lịch Tư Vấn Miễn Phí',
+    footCtaTitle: 'Sẵn sàng để AI đón khách giúp bạn chưa?', footCtaBtn: 'Đặt Lịch Dùng Thử Miễn Phí',
+    footer: 'Hualienvibe Digital Studio · Sản xuất tại Hualien, dành cho chị em lao động làm nghề móng',
     chat: [
-      {who:'user', text:'Chào shop, mình muốn đặt lịch làm gel thứ Bảy'},
-      {who:'bot', text:'Chào bạn! 💅 Thứ Bảy còn trống lúc 10:00, 14:00, 16:30. Bạn chọn giờ nào ạ?'},
-      {who:'user', text:'14:00 được, giá bao nhiêu vậy?'},
-      {who:'bot', text:'Gel Nhật màu trơn $800, vẽ tay từ $1200. Có dịch vụ tận nhà, phụ thu thêm $200. Mình đã giữ chỗ 14:00 cho bạn rồi nha ✨'},
+      { who: 'user', text: 'Chào shop, mình muốn đặt lịch làm gel thứ Bảy' },
+      { who: 'bot', text: 'Chào bạn! Thứ Bảy còn trống lúc 10:00, 14:00, 16:30. Bạn chọn giờ nào ạ?' },
+      { who: 'user', text: '14:00 được, giá bao nhiêu vậy?' },
+      { who: 'bot', text: 'Gel Nhật màu trơn $800, vẽ tay từ $1200. Có dịch vụ tận nhà, phụ thu thêm $200. Mình đã giữ chỗ 14:00 cho bạn rồi nha.' }
     ]
   }
 };
@@ -648,50 +484,77 @@ let currentLang = 'zh';
 
 function applyLang(lang) {
   currentLang = lang;
-  const t = translations[lang];
+  const t = T[lang];
+  if (!t) return;
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (t[key] !== undefined) {
-      el.innerHTML = t[key];
-    }
+    const k = el.getAttribute('data-i18n');
+    if (t[k] !== undefined) el.innerHTML = t[k];
   });
   document.querySelectorAll('.lang-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.lang === lang);
+    const on = b.dataset.lang === lang;
+    b.style.background = on ? '#241914' : 'transparent';
+    b.style.color = on ? '#F4EDE5' : '#241914';
+    b.style.opacity = on ? '1' : '0.65';
   });
   renderChat();
 }
 
 function renderChat() {
-  const body = document.getElementById('chatBody');
+  const body = document.getElementById('hv-chat');
+  if (!body) return;
   body.innerHTML = '';
-  const chat = translations[currentLang].chat;
-  chat.forEach((m, i) => {
+  T[currentLang].chat.forEach((m, i) => {
     setTimeout(() => {
       const div = document.createElement('div');
-      div.className = 'msg ' + m.who;
+      const bot = m.who === 'bot';
+      div.style.cssText = 'max-width:82%;padding:11px 15px;font-size:12.8px;line-height:1.5;border-radius:16px;opacity:0;transition:opacity .4s ease,transform .4s ease;' +
+        (bot
+          ? 'background:#F1E7DE;color:#3A2A22;align-self:flex-start;border-bottom-left-radius:5px;'
+          : 'background:#9E5460;color:#fff;align-self:flex-end;border-bottom-right-radius:5px;');
+      div.style.transform = 'translateY(6px)';
       div.textContent = m.text;
-      div.style.opacity = '0';
       body.appendChild(div);
-      requestAnimationFrame(() => {
-        div.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        div.style.opacity = '1';
-      });
-    }, i * 350);
+      requestAnimationFrame(() => { div.style.opacity = '1'; div.style.transform = 'none'; });
+    }, i * 380);
   });
 }
 
-document.querySelectorAll('.lang-btn').forEach(btn => {
-  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+document.querySelectorAll('.lang-btn').forEach(b => {
+  b.addEventListener('click', () => applyLang(b.dataset.lang));
 });
+
+// scroll reveal
+const reveals = Array.from(document.querySelectorAll('[data-reveal]'));
+const show = el => { el.style.opacity = '1'; el.style.transform = 'none'; };
+reveals.forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)';
+});
+const revealInView = () => {
+  const vh = window.innerHeight || 800;
+  reveals.forEach(el => {
+    if (el.style.opacity === '1') return;
+    const r = el.getBoundingClientRect();
+    if (r.top < vh * 0.95 && r.bottom > 0) show(el);
+  });
+};
+requestAnimationFrame(revealInView);
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+  reveals.forEach(el => io.observe(el));
+}
+window.addEventListener('scroll', revealInView, { passive: true });
+setTimeout(() => reveals.forEach(el => { el.style.transition = 'none'; el.style.opacity = '1'; el.style.transform = 'none'; }), 1200);
+
+setTimeout(() => {
+  const s = document.getElementById('hv-stroke');
+  if (s) s.style.width = '100%';
+}, 500);
 
 applyLang('zh');
-
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('heroStroke').classList.add('painted');
-  }, 400);
-});
 </script>
-
 </body>
 </html>
