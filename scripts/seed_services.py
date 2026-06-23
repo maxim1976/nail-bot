@@ -41,6 +41,7 @@ SERVICES = [
         duration_min=90,
         price=1200,
         category="gel",
+        image_url="/uploads/services/gel.jpg",
         in_carousel=True,
         sort_order=1,
     ),
@@ -55,6 +56,7 @@ SERVICES = [
         duration_min=120,
         price=1800,
         category="art",
+        image_url="/uploads/services/art.jpg",
         in_carousel=True,
         sort_order=2,
     ),
@@ -69,6 +71,7 @@ SERVICES = [
         duration_min=90,
         price=1400,
         category="gel",
+        image_url="/uploads/services/ombre.jpg",
         in_carousel=True,
         sort_order=3,
     ),
@@ -83,6 +86,7 @@ SERVICES = [
         duration_min=30,
         price=300,
         category="removal",
+        image_url="/uploads/services/care.jpg",
         sort_order=4,
     ),
     dict(
@@ -96,6 +100,7 @@ SERVICES = [
         duration_min=45,
         price=500,
         category="care",
+        image_url="/uploads/services/care.jpg",
         sort_order=5,
     ),
     dict(
@@ -109,6 +114,7 @@ SERVICES = [
         duration_min=120,
         price=2000,
         category="art",
+        image_url="/uploads/services/crystal.jpg",
         in_carousel=True,
         sort_order=6,
     ),
@@ -123,6 +129,7 @@ SERVICES = [
         duration_min=75,
         price=1000,
         category="gel",
+        image_url="/uploads/services/french.jpg",
         sort_order=7,
     ),
     dict(
@@ -136,6 +143,7 @@ SERVICES = [
         duration_min=90,
         price=1300,
         category="pedicure",
+        image_url="/uploads/services/pedicure.jpg",
         sort_order=8,
     ),
 ]
