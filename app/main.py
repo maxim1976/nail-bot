@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -21,19 +21,76 @@ from app.config import get_settings
 from app.line_client import LineClient
 from app.webhook import router as webhook_router
 
+_RICH_MENU_IMAGE = Path(__file__).parent / "assets" / "rich-menu.png"
+_rich_menu_id_cache: str | None = None
+
 
 def _build_line_client() -> LineClient:
     return LineClient(channel_access_token=get_settings().line_channel_access_token)
 
 
 def _rich_menu_id() -> str | None:
-    return os.environ.get("RICH_MENU_ID") or None
+    return _rich_menu_id_cache or get_settings().rich_menu_id or None
+
+
+def _ensure_rich_menu() -> None:
+    global _rich_menu_id_cache
+    settings = get_settings()
+
+    # Fast path: already resolved this session
+    if _rich_menu_id_cache:
+        return
+
+    # If no LIFF ID, rich menu booking button would be broken — skip
+    if not settings.liff_id:
+        logging.warning("rich menu setup skipped: LIFF_ID not set")
+        return
+
+    client = _build_line_client()
+
+    # Use env-configured ID if provided; still set as default to stay consistent
+    if settings.rich_menu_id:
+        try:
+            client.set_default_rich_menu(settings.rich_menu_id)
+        except Exception:
+            logging.exception("could not set configured RICH_MENU_ID as default")
+        _rich_menu_id_cache = settings.rich_menu_id
+        return
+
+    # Check if we already created one in a previous deploy
+    try:
+        existing = client.list_rich_menus()
+        for menu in existing:
+            if menu.get("name") == "Hualienvibe Main Menu":
+                rid: str = menu["richMenuId"]
+                client.set_default_rich_menu(rid)
+                _rich_menu_id_cache = rid
+                logging.info("rich menu reused: %s — set RICH_MENU_ID=%s in env to skip this step", rid, rid)
+                return
+    except Exception:
+        logging.exception("could not list rich menus")
+        return
+
+    # Create from bundled image
+    if not _RICH_MENU_IMAGE.exists():
+        logging.warning("rich menu image missing at %s — skipping setup", _RICH_MENU_IMAGE)
+        return
+
+    try:
+        rid = client.create_rich_menu(liff_id=settings.liff_id, image_path=_RICH_MENU_IMAGE)
+        client.set_default_rich_menu(rid)
+        _rich_menu_id_cache = rid
+        logging.info("rich menu created: %s — set RICH_MENU_ID=%s in env to skip this step", rid, rid)
+    except Exception:
+        logging.exception("rich menu creation failed")
 
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
+    import asyncio
     from app.scheduler import start_scheduler, stop_scheduler
     start_scheduler()
+    await asyncio.to_thread(_ensure_rich_menu)
     yield
     stop_scheduler()
 

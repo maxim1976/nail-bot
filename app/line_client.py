@@ -4,9 +4,13 @@ import base64
 import hashlib
 import hmac
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import httpx
+
+_RICH_MENU_NAME = "Hualienvibe Main Menu"
+_RICH_MENU_SIZE = {"width": 2500, "height": 843}
 
 
 def verify_signature(*, secret: str, body: bytes, header_signature: str | None) -> bool:
@@ -76,3 +80,49 @@ class LineClient:
             return r.json().get("displayName")
         except httpx.HTTPError:
             return None
+
+    def list_rich_menus(self) -> list[dict[str, Any]]:
+        r = self._http.get(f"{self.BASE}/richmenu/list")
+        r.raise_for_status()
+        return r.json().get("richmenus", [])
+
+    def create_rich_menu(self, *, liff_id: str, image_path: Path) -> str:
+        body: dict[str, Any] = {
+            "size": _RICH_MENU_SIZE,
+            "selected": True,
+            "name": _RICH_MENU_NAME,
+            "chatBarText": "選單",
+            "areas": [
+                {
+                    "bounds": {"x": 0, "y": 0, "width": 833, "height": 843},
+                    "action": {
+                        "type": "uri",
+                        "label": "預約",
+                        "uri": f"https://liff.line.me/{liff_id}",
+                    },
+                },
+                {
+                    "bounds": {"x": 833, "y": 0, "width": 834, "height": 843},
+                    "action": {"type": "message", "label": "作品集", "text": "作品集"},
+                },
+                {
+                    "bounds": {"x": 1667, "y": 0, "width": 833, "height": 843},
+                    "action": {"type": "message", "label": "聯絡我們", "text": "聯絡我們"},
+                },
+            ],
+        }
+        r = self._http.post(f"{self.BASE}/richmenu", json=body)
+        r.raise_for_status()
+        rich_menu_id: str = r.json()["richMenuId"]
+
+        r = self._http.post(
+            f"https://api-data.line.me/v2/bot/richmenu/{rich_menu_id}/content",
+            content=image_path.read_bytes(),
+            headers={"Content-Type": "image/png"},
+        )
+        r.raise_for_status()
+        return rich_menu_id
+
+    def set_default_rich_menu(self, rich_menu_id: str) -> None:
+        r = self._http.post(f"{self.BASE}/user/all/richmenu/{rich_menu_id}")
+        r.raise_for_status()
