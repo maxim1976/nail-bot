@@ -115,10 +115,11 @@ class LineClient:
         r.raise_for_status()
         rich_menu_id: str = r.json()["richMenuId"]
 
+        mime = "image/jpeg" if image_path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
         r = self._http.post(
             f"https://api-data.line.me/v2/bot/richmenu/{rich_menu_id}/content",
             content=image_path.read_bytes(),
-            headers={"Content-Type": "image/png"},
+            headers={"Content-Type": mime},
         )
         r.raise_for_status()
         return rich_menu_id

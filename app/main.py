@@ -21,7 +21,7 @@ from app.config import get_settings
 from app.line_client import LineClient
 from app.webhook import router as webhook_router
 
-_RICH_MENU_IMAGE = Path(__file__).parent / "assets" / "rich-menu.png"
+_RICH_MENU_IMAGE = Path(__file__).parent / "assets" / "rich-menu.jpg"
 _rich_menu_id_cache: str | None = None
 
 
@@ -52,10 +52,10 @@ def _ensure_rich_menu() -> None:
     if settings.rich_menu_id:
         try:
             client.set_default_rich_menu(settings.rich_menu_id)
+            _rich_menu_id_cache = settings.rich_menu_id
+            return
         except Exception:
-            logging.exception("could not set configured RICH_MENU_ID as default")
-        _rich_menu_id_cache = settings.rich_menu_id
-        return
+            logging.warning("RICH_MENU_ID=%s is invalid (400); will recreate", settings.rich_menu_id)
 
     # Check if we already created one in a previous deploy
     try:
