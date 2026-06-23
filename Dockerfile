@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir .
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
+COPY scripts ./scripts
 COPY --from=node-builder /app/frontend/liff/dist ./frontend/liff/dist
 COPY frontend/admin ./frontend/admin
 
