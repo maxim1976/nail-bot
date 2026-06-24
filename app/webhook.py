@@ -4,7 +4,7 @@ import json
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 
 from app.config import get_settings
@@ -28,7 +28,9 @@ def _run_dispatch(events: list[dict[str, Any]]) -> None:
 
 @router.post("/webhook")
 async def webhook(
-    request: Request, x_line_signature: str | None = Header(default=None)
+    request: Request,
+    background_tasks: BackgroundTasks,
+    x_line_signature: str | None = Header(default=None),
 ) -> dict[str, bool]:
     body = await request.body()
     settings = get_settings()
@@ -37,5 +39,5 @@ async def webhook(
     ):
         raise HTTPException(status_code=401, detail="invalid signature")
     payload = json.loads(body.decode() or "{}")
-    await run_in_threadpool(_run_dispatch, payload.get("events", []))
+    background_tasks.add_task(run_in_threadpool, _run_dispatch, payload.get("events", []))
     return {"ok": True}
