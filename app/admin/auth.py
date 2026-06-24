@@ -53,12 +53,3 @@ def login(body: LoginIn) -> TokenOut:
         algorithm="HS256",
     )
     return TokenOut(access_token=token)
-
-
-@router.get("/studio")
-def get_studio(
-    _: None = Depends(require_admin_token),
-) -> dict[str, str]:
-    # This is a placeholder for the studio admin endpoint
-    # Actual implementation will be in a later task
-    raise HTTPException(status_code=404, detail="Studio not found")
