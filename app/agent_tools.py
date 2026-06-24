@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import uuid
 import zoneinfo
@@ -9,11 +10,42 @@ from sqlalchemy import select
 
 from app.db import session_scope
 from app.line_client import LineClient, ReplyMessage
-from app.models import Appointment, Service
+from app.models import Appointment, Service, User
+from app.slots import available_slots
 
 TZ = zoneinfo.ZoneInfo("Asia/Taipei")
 
 BOOKING_TOOLS: list[dict] = [
+    {
+        "name": "book_appointment",
+        "description": (
+            "Book an appointment for the customer. "
+            "Call get_services first to get service_id, call get_available_slots to confirm "
+            "the time is open, collect the customer's name, then call this tool."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "service_id": {
+                    "type": "string",
+                    "description": "UUID of the service (from get_services)",
+                },
+                "scheduled_at": {
+                    "type": "string",
+                    "description": "Datetime in 'YYYY-MM-DD HH:MM' format, Asia/Taipei timezone",
+                },
+                "customer_name": {
+                    "type": "string",
+                    "description": "Customer's name",
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Optional special requests or notes",
+                },
+            },
+            "required": ["service_id", "scheduled_at", "customer_name"],
+        },
+    },
     {
         "name": "get_my_appointments",
         "description": "Retrieve the customer's upcoming confirmed appointments.",
@@ -160,10 +192,103 @@ def _get_services() -> str:
     return json.dumps({"services": result})
 
 
+def _book_appointment(
+    service_id: str,
+    scheduled_at_str: str,
+    customer_name: str,
+    notes: str | None,
+    *,
+    line_user_id: str,
+) -> str:
+    try:
+        svc_uuid = uuid.UUID(service_id)
+    except ValueError:
+        return json.dumps({"error": "Invalid service_id format."})
+
+    scheduled_at: datetime | None = None
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%dT%H:%M"):
+        try:
+            scheduled_at = datetime.strptime(scheduled_at_str, fmt).replace(tzinfo=TZ)
+            break
+        except ValueError:
+            continue
+    if scheduled_at is None:
+        return json.dumps({"error": "Invalid scheduled_at format. Use YYYY-MM-DD HH:MM."})
+
+    svc_name = ""
+    svc_price: int | float = 0
+    user_lang = "zh"
+    appt_id_str = ""
+
+    with session_scope() as s:
+        svc = s.get(Service, svc_uuid)
+        if svc is None:
+            return json.dumps({"error": "Service not found."})
+
+        open_slots = available_slots(
+            target_date=scheduled_at.date(),
+            service_id=svc_uuid,
+            duration_min=svc.duration_min,
+            session=s,
+        )
+        if scheduled_at not in open_slots:
+            return json.dumps({"error": "That slot is no longer available. Please choose another time."})
+
+        user = s.get(User, line_user_id)
+        if user is None:
+            user = User(line_user_id=line_user_id)
+            s.add(user)
+            s.flush()
+        user_lang = user.preferred_language or "zh"
+
+        appt = Appointment(
+            line_user_id=line_user_id,
+            service_id=svc_uuid,
+            scheduled_at=scheduled_at,
+            duration_min=svc.duration_min,
+            customer_name=customer_name,
+            notes=notes or "",
+            status="confirmed",
+        )
+        s.add(appt)
+        s.flush()
+
+        appt_id_str = str(appt.id)
+        svc_name = svc.name
+        svc_price = svc.price
+
+    from types import SimpleNamespace
+
+    from app.config import get_settings
+    from app.notifications import send_booking_confirmation
+
+    settings = get_settings()
+    lc = LineClient(channel_access_token=settings.line_channel_access_token)
+    with contextlib.suppress(Exception):
+        send_booking_confirmation(
+            appt=SimpleNamespace(
+                line_user_id=line_user_id,
+                scheduled_at=scheduled_at,
+                customer_name=customer_name,
+                notes=notes or "",
+            ),
+            service=SimpleNamespace(name=svc_name, price=svc_price),
+            user=SimpleNamespace(preferred_language=user_lang),
+            line_client=lc,
+            owner_line_user_id=settings.owner_line_user_id,
+        )
+
+    return json.dumps({
+        "success": True,
+        "appointment_id": appt_id_str,
+        "service": svc_name,
+        "scheduled_at": scheduled_at.strftime("%Y/%m/%d %H:%M"),
+        "customer_name": customer_name,
+    })
+
+
 def _get_available_slots(date_str: str, service_id: str | None = None) -> str:
     from datetime import date as date_t
-
-    from app.slots import available_slots
 
     try:
         target_date = date_t.fromisoformat(date_str)
@@ -188,6 +313,13 @@ def _get_available_slots(date_str: str, service_id: str | None = None) -> str:
 
 
 def execute_tool(name: str, tool_input: dict, *, line_user_id: str) -> str:
+    if name == "book_appointment":
+        svc_id = tool_input.get("service_id")
+        sched = tool_input.get("scheduled_at")
+        cname = tool_input.get("customer_name")
+        if not svc_id or not sched or not cname:
+            return json.dumps({"error": "missing required fields: service_id, scheduled_at, customer_name"})
+        return _book_appointment(svc_id, sched, cname, tool_input.get("notes"), line_user_id=line_user_id)
     if name == "get_my_appointments":
         return _get_my_appointments(line_user_id)
     if name == "cancel_appointment":
