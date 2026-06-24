@@ -6,7 +6,7 @@ import uuid
 import zoneinfo
 from datetime import date, datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from sqlalchemy import select
 
 from app.api.schemas import AppointmentIn, AppointmentOut, SlotOut
@@ -33,7 +33,7 @@ def get_slots(service_id: uuid.UUID, date: date) -> list[SlotOut]:
 
 
 @router.post("/appointments", response_model=AppointmentOut, status_code=201)
-def create_appointment(body: AppointmentIn) -> AppointmentOut:
+def create_appointment(body: AppointmentIn, background_tasks: BackgroundTasks) -> AppointmentOut:
     with session_scope() as s:
         service = s.get(Service, body.service_id)
         if service is None:
@@ -92,7 +92,9 @@ def create_appointment(body: AppointmentIn) -> AppointmentOut:
         _svc_price = service.price
         _user_lang = user.preferred_language if user else "zh"
 
-    # Session committed — push notifications (fire-and-forget)
+    # Push notifications after response is returned
+    from types import SimpleNamespace
+
     from app.config import get_settings
     from app.line_client import LineClient
     from app.notifications import send_booking_confirmation
@@ -100,22 +102,22 @@ def create_appointment(body: AppointmentIn) -> AppointmentOut:
     settings = get_settings()
     lc = LineClient(channel_access_token=settings.line_channel_access_token)
 
-    from types import SimpleNamespace
+    def _push() -> None:
+        with contextlib.suppress(Exception):
+            send_booking_confirmation(
+                appt=SimpleNamespace(
+                    line_user_id=_appt_line_user_id,
+                    scheduled_at=_appt_scheduled_at,
+                    customer_name=_appt_customer_name,
+                    notes=_appt_notes,
+                ),
+                service=SimpleNamespace(name=_svc_name, price=_svc_price),
+                user=SimpleNamespace(preferred_language=_user_lang),
+                line_client=lc,
+                owner_line_user_id=settings.owner_line_user_id,
+            )
 
-    with contextlib.suppress(Exception):
-        send_booking_confirmation(
-            appt=SimpleNamespace(
-                line_user_id=_appt_line_user_id,
-                scheduled_at=_appt_scheduled_at,
-                customer_name=_appt_customer_name,
-                notes=_appt_notes,
-            ),
-            service=SimpleNamespace(name=_svc_name, price=_svc_price),
-            user=SimpleNamespace(preferred_language=_user_lang),
-            line_client=lc,
-            owner_line_user_id=settings.owner_line_user_id,
-        )
-
+    background_tasks.add_task(_push)
     return result
 
 
