@@ -118,15 +118,20 @@ def _build_studio_section() -> tuple[str, str, str]:
 
 
 def _build_system_prompt(agent_key: str, preferred_language: str) -> str:
+    import zoneinfo
+    from datetime import datetime
+
     settings = get_settings()
     if agent_key == "booking_assistant":
         studio_name, studio_section, services_section = _build_studio_section()
+        today = datetime.now(zoneinfo.ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d (%A)")
         return system_prompt_for(
             agent_key,
             studio_name=studio_name,
             studio_section=studio_section,
             services_section=services_section,
             preferred_language=preferred_language,
+            today=today,
         )
     if agent_key == "sales_agent":
         seller_line_id = settings.seller_line_id or "（請洽開發者）"
