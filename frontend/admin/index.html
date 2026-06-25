@@ -107,6 +107,11 @@
               </div>
             </div>
             <div>
+              <label class="block text-sm font-medium text-[#241914] mb-1">Website</label>
+              <input type="url" x-model="studio.website" placeholder="https://..."
+                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
+            </div>
+            <div>
               <label class="block text-sm font-medium text-[#241914] mb-1">Owner LINE User ID</label>
               <input type="text" x-model="studio.owner_line_user_id" placeholder="Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#B86E78]" />
@@ -643,7 +648,7 @@ function adminApp() {
 
     // ── Studio Profile ────────────────────────────────────────────────────
     studio: {
-      studio_name: '', owner_name: '', address: '', phone: '', instagram: '',
+      studio_name: '', owner_name: '', address: '', phone: '', instagram: '', website: '',
       cancellation_policy: '', aftercare_notes: '', ai_persona_notes: '', owner_line_user_id: '',
     },
     studioSaving: false,
