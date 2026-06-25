@@ -141,6 +141,7 @@ def _cancel_appointment(appointment_id: str, *, line_user_id: str) -> str:
 
     svc_name = ""
     scheduled_str = ""
+    cal_event_id: str | None = None
     with session_scope() as s:
         appt = s.get(Appointment, appt_uuid)
         if appt is None or appt.line_user_id != line_user_id:
@@ -150,6 +151,7 @@ def _cancel_appointment(appointment_id: str, *, line_user_id: str) -> str:
         svc = s.get(Service, appt.service_id) if appt.service_id else None
         svc_name = svc.name if svc else ""
         scheduled_str = appt.scheduled_at.astimezone(TZ).strftime("%Y/%m/%d %H:%M")
+        cal_event_id = appt.google_calendar_event_id
         appt.status = "cancelled"
 
     from app.config import get_settings
@@ -160,6 +162,11 @@ def _cancel_appointment(appointment_id: str, *, line_user_id: str) -> str:
         lc.push(line_user_id=line_user_id, messages=[ReplyMessage.text(msg)])
     except Exception:
         pass
+
+    if cal_event_id:
+        from app import google_calendar as gcal
+        with contextlib.suppress(Exception):
+            gcal.delete_event(cal_event_id)
 
     return json.dumps({"success": True, "service": svc_name, "cancelled_at": scheduled_str})
 
@@ -256,6 +263,7 @@ def _book_appointment(
         appt_id_str = str(appt.id)
         svc_name = svc.name
         svc_price = svc.price
+        svc_duration = svc.duration_min
 
     from types import SimpleNamespace
 
@@ -277,6 +285,21 @@ def _book_appointment(
             line_client=lc,
             owner_line_user_id=settings.owner_line_user_id,
         )
+
+    from app import google_calendar as gcal
+    with contextlib.suppress(Exception):
+        event_id = gcal.create_event(
+            service_name=svc_name,
+            scheduled_at=scheduled_at,
+            duration_min=svc_duration,
+            customer_name=customer_name,
+            notes=notes or "",
+        )
+        if event_id:
+            with session_scope() as s:
+                appt_obj = s.get(Appointment, uuid.UUID(appt_id_str))
+                if appt_obj:
+                    appt_obj.google_calendar_event_id = event_id
 
     return json.dumps({
         "success": True,

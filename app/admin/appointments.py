@@ -59,14 +59,17 @@ def update_appointment(
     body: AdminAppointmentUpdate,
     auth: None = Depends(require_admin_token),
 ) -> AdminAppointmentOut:
+    import contextlib
+    cal_event_id: str | None = None
     with session_scope() as s:
         appt = s.get(Appointment, appointment_id)
         if appt is None:
             raise HTTPException(status_code=404, detail="Appointment not found")
         service = s.get(Service, appt.service_id)
+        cal_event_id = appt.google_calendar_event_id
         appt.status = body.status
         s.flush()
-        return AdminAppointmentOut(
+        result = AdminAppointmentOut(
             id=appt.id,
             line_user_id=appt.line_user_id,
             service_name=service.name if service else "",
@@ -76,3 +79,10 @@ def update_appointment(
             customer_name=appt.customer_name,
             notes=appt.notes,
         )
+
+    if body.status == "cancelled" and cal_event_id:
+        from app import google_calendar as gcal
+        with contextlib.suppress(Exception):
+            gcal.delete_event(cal_event_id)
+
+    return result
