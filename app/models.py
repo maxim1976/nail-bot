@@ -129,6 +129,7 @@ class StudioProfile(Base):
     address: Mapped[str | None] = mapped_column(String)
     phone: Mapped[str | None] = mapped_column(String)
     instagram: Mapped[str | None] = mapped_column(String)
+    website: Mapped[str | None] = mapped_column(String)
     cancellation_policy: Mapped[str | None] = mapped_column(String)
     aftercare_notes: Mapped[str | None] = mapped_column(String)
     ai_persona_notes: Mapped[str | None] = mapped_column(String)

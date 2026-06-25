@@ -92,6 +92,8 @@ def _build_studio_section() -> tuple[str, str, str]:
             parts.append(f"Phone: {profile.phone}")
         if profile.instagram:
             parts.append(f"Instagram: {profile.instagram}")
+        if profile.website:
+            parts.append(f"Website: {profile.website}")
         if profile.cancellation_policy:
             parts.append(f"Cancellation policy: {profile.cancellation_policy}")
         if profile.aftercare_notes:

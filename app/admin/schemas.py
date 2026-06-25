@@ -23,6 +23,7 @@ class StudioProfileIn(BaseModel):
     address: str | None = None
     phone: str | None = None
     instagram: str | None = None
+    website: str | None = None
     cancellation_policy: str | None = None
     aftercare_notes: str | None = None
     ai_persona_notes: str | None = None
@@ -37,6 +38,7 @@ class StudioProfileOut(BaseModel):
     address: str | None
     phone: str | None
     instagram: str | None
+    website: str | None
     cancellation_policy: str | None
     aftercare_notes: str | None
     ai_persona_notes: str | None
