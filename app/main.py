@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.admin.appointments import router as admin_appointments_router
 from app.admin.auth import router as admin_auth_router
+from app.admin.google_calendar import router as admin_google_calendar_router
 from app.admin.portfolio import router as admin_portfolio_router
 from app.admin.schedule import router as admin_schedule_router
 from app.admin.services import router as admin_services_router
@@ -125,6 +126,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_portfolio_router)
     app.include_router(admin_appointments_router)
     app.include_router(admin_schedule_router)
+    app.include_router(admin_google_calendar_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:
