@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     seller_line_id: str = ""
     rich_menu_id: str | None = None
 
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+
     liff_id: str = ""
 
     admin_username: str = "admin"

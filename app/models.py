@@ -134,6 +134,9 @@ class StudioProfile(Base):
     aftercare_notes: Mapped[str | None] = mapped_column(String)
     ai_persona_notes: Mapped[str | None] = mapped_column(String)
     owner_line_user_id: Mapped[str | None] = mapped_column(String)
+    google_access_token: Mapped[str | None] = mapped_column(String)
+    google_refresh_token: Mapped[str | None] = mapped_column(String)
+    google_token_expiry: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
@@ -215,6 +218,7 @@ class Appointment(Base):
     )
     customer_name: Mapped[str] = mapped_column(String, nullable=False, server_default="")
     notes: Mapped[str | None] = mapped_column(String)
+    google_calendar_event_id: Mapped[str | None] = mapped_column(String)
     reminder_sent: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )

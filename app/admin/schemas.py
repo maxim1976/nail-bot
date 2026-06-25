@@ -152,3 +152,8 @@ class DateOverrideOut(BaseModel):
     is_blocked: bool
     custom_start: time | None
     custom_end: time | None
+
+
+class GoogleStatusOut(BaseModel):
+    connected: bool
+    email: str | None = None
