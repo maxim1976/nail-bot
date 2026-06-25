@@ -141,6 +141,32 @@
             </button>
           </div>
         </div>
+
+        <!-- Google Calendar -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mt-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-[#241914]">Google Calendar</h2>
+            <span x-show="googleCalMsg" x-text="googleCalMsg" class="text-sm text-green-600"></span>
+          </div>
+          <div x-show="!googleCal.connected">
+            <p class="text-sm text-gray-500 mb-4">Connect your Google Calendar to automatically add bookings as events.</p>
+            <button @click="connectGoogleCal()"
+              class="bg-[#B86E78] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#a5606a]">
+              Connect Google Calendar
+            </button>
+          </div>
+          <div x-show="googleCal.connected" class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-green-600 font-medium">✅ Connected</span>
+              <span x-show="googleCal.email" x-text="'as ' + googleCal.email" class="text-sm text-gray-500"></span>
+            </div>
+            <button @click="disconnectGoogleCal()" :disabled="googleCalLoading"
+              class="text-sm text-red-500 hover:underline disabled:opacity-50">
+              <span x-show="!googleCalLoading">Disconnect</span>
+              <span x-show="googleCalLoading">Disconnecting…</span>
+            </button>
+          </div>
+        </div>
       </div>
       <!-- TAB:STUDIO:END -->
 
@@ -654,11 +680,37 @@ function adminApp() {
     studioSaving: false,
     studioMsg: '',
 
+    // ── Google Calendar ───────────────────────────────────────────────────
+    googleCal: { connected: false, email: null },
+    googleCalLoading: false,
+    googleCalMsg: '',
+
+    async loadGoogleCalStatus() {
+      const res = await this.api('/admin/google/status');
+      if (res && res.ok) this.googleCal = await res.json();
+    },
+    async connectGoogleCal() {
+      const res = await this.api('/admin/google/auth-url');
+      if (res && res.ok) {
+        const { url } = await res.json();
+        window.location.href = url;
+      }
+    },
+    async disconnectGoogleCal() {
+      this.googleCalLoading = true;
+      await this.api('/admin/google/disconnect', { method: 'DELETE' });
+      this.googleCal = { connected: false, email: null };
+      this.googleCalMsg = 'Disconnected.';
+      this.googleCalLoading = false;
+      setTimeout(() => this.googleCalMsg = '', 3000);
+    },
+
     async loadStudio() {
       const res = await this.api('/admin/studio');
       if (!res) return;
       if (res.ok) this.studio = await res.json();
       // 404 = no studio row yet; form stays at defaults
+      await this.loadGoogleCalStatus();
     },
     async saveStudio() {
       this.studioSaving = true;
