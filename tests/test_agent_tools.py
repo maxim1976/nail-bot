@@ -54,9 +54,9 @@ def _seed_appointment(
     return appt_id
 
 
-def test_booking_tools_has_four_entries():
+def test_booking_tools_has_five_entries():
     names = [t["name"] for t in BOOKING_TOOLS]
-    assert names == ["get_my_appointments", "cancel_appointment", "get_services", "get_available_slots"]
+    assert names == ["book_appointment", "get_my_appointments", "cancel_appointment", "get_services", "get_available_slots"]
 
 
 def test_get_my_appointments_returns_upcoming():
