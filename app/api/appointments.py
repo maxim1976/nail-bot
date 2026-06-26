@@ -84,12 +84,14 @@ def create_appointment(body: AppointmentIn, background_tasks: BackgroundTasks) -
             notes=appt.notes,
         )
         # Capture ORM values before session closes
+        _appt_id = appt.id
         _appt_line_user_id = appt.line_user_id
         _appt_scheduled_at = appt.scheduled_at
         _appt_customer_name = appt.customer_name
         _appt_notes = appt.notes
         _svc_name = service.name
         _svc_price = service.price
+        _svc_duration = service.duration_min
         _user_lang = user.preferred_language if user else "zh"
 
     # Push notifications after response is returned
@@ -116,6 +118,21 @@ def create_appointment(body: AppointmentIn, background_tasks: BackgroundTasks) -
                 line_client=lc,
                 owner_line_user_id=settings.owner_line_user_id,
             )
+
+        from app import google_calendar as gcal
+        with contextlib.suppress(Exception):
+            event_id = gcal.create_event(
+                service_name=_svc_name,
+                scheduled_at=_appt_scheduled_at,
+                duration_min=_svc_duration,
+                customer_name=_appt_customer_name,
+                notes=_appt_notes or "",
+            )
+            if event_id:
+                with session_scope() as s:
+                    appt_obj = s.get(Appointment, _appt_id)
+                    if appt_obj:
+                        appt_obj.google_calendar_event_id = event_id
 
     background_tasks.add_task(_push)
     return result
