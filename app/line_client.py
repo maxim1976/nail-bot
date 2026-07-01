@@ -103,7 +103,7 @@ class LineClient:
                 },
                 {
                     "bounds": {"x": 833, "y": 0, "width": 834, "height": 843},
-                    "action": {"type": "message", "label": "作品集", "text": "作品集"},
+                    "action": {"type": "message", "label": "本月優惠", "text": "本月優惠"},
                 },
                 {
                     "bounds": {"x": 1667, "y": 0, "width": 833, "height": 843},
