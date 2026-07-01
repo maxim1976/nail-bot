@@ -24,9 +24,11 @@ from app.replies import (
     OWNER_RATE_LIMIT_ALERT,
     PERSONA_SELECT,
     PORTFOLIO_TRIGGER,
+    SERVICES_TRIGGER,
     WELCOME_FOLLOW,
     WELCOME_FOLLOW_QUICK_REPLIES,
 )
+from app.services_carousel import build_services_carousel
 
 
 def handle_event(
@@ -112,6 +114,18 @@ def _handle_message(event: dict[str, Any], line_client: LineClient) -> None:
             line_client.reply(
                 reply_token=reply_token,
                 messages=[ReplyMessage.text("目前尚無作品，敬請期待！")],
+            )
+        return
+
+    # Services carousel — 本月優惠 rich menu button
+    if text == SERVICES_TRIGGER:
+        carousel = build_services_carousel(settings.admin_base_url)
+        if carousel:
+            line_client.reply(reply_token=reply_token, messages=[carousel])
+        else:
+            line_client.reply(
+                reply_token=reply_token,
+                messages=[ReplyMessage.text("目前尚無本月優惠，敬請期待！")],
             )
         return
 
