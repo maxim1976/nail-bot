@@ -10,7 +10,7 @@ from app.anthropic_client import AnthropicCallResult, ChatTurn, call_claude, cal
 from app.config import get_settings
 from app.cost_tracker import record_call
 from app.db import session_scope
-from app.models import Conversation, Message, Service, StudioProfile, User
+from app.models import Conversation, Message, RoomType, Service, StudioProfile, User
 from app.personas import system_prompt_for
 
 _LANG_SENTINEL = re.compile(r"^\[LANG:([a-z]{2})\]\s*")
@@ -119,6 +119,28 @@ def _build_studio_section() -> tuple[str, str, str]:
     return studio_name, studio_section, services_section
 
 
+def _build_rooms_section() -> str:
+    with session_scope() as s:
+        rooms = (
+            s.execute(
+                select(RoomType)
+                .where(RoomType.is_available == True)  # noqa: E712
+                .order_by(RoomType.sort_order)
+            )
+            .scalars()
+            .all()
+        )
+    if not rooms:
+        return "(No room types configured yet)"
+    rows = []
+    for r in rooms:
+        rows.append(
+            f"- {r.name} (id={r.id}) — 適合 {r.capacity} 人（最多 {r.max_capacity}）"
+            f" — 平日 NT${r.price_weekday} / 旺日 NT${r.price_peak} / 連續假日 NT${r.price_holiday}"
+        )
+    return "\n".join(rows)
+
+
 def _build_system_prompt(agent_key: str, preferred_language: str) -> str:
     import zoneinfo
     from datetime import datetime
@@ -135,6 +157,18 @@ def _build_system_prompt(agent_key: str, preferred_language: str) -> str:
             preferred_language=preferred_language,
             today=today,
         )
+    if agent_key == "lodging_assistant":
+        studio_name, studio_section, _ = _build_studio_section()
+        rooms_section = _build_rooms_section()
+        today = datetime.now(zoneinfo.ZoneInfo("Asia/Taipei")).strftime("%Y-%m-%d (%A)")
+        return system_prompt_for(
+            agent_key,
+            studio_name=studio_name,
+            studio_section=studio_section,
+            rooms_section=rooms_section,
+            preferred_language=preferred_language,
+            today=today,
+        )
     if agent_key == "sales_agent":
         seller_line_id = settings.seller_line_id or "（請洽開發者）"
         return system_prompt_for(
@@ -146,8 +180,6 @@ def _build_system_prompt(agent_key: str, preferred_language: str) -> str:
 
 
 def generate_agent_reply(*, line_user_id: str, text: str, history_turns: int) -> AgentReply:
-    from app.agent_tools import BOOKING_TOOLS, execute_tool
-
     settings = get_settings()
 
     with session_scope() as s:
@@ -162,14 +194,20 @@ def generate_agent_reply(*, line_user_id: str, text: str, history_turns: int) ->
     system_prompt = _build_system_prompt(agent_key, preferred_language)
 
     result: AnthropicCallResult
-    if agent_key == "booking_assistant":
-        tool_executor = lambda name, inp: execute_tool(name, inp, line_user_id=line_user_id)
+    if agent_key in ("booking_assistant", "lodging_assistant"):
+        if agent_key == "lodging_assistant":
+            from app.lodging_tools import LODGING_TOOLS as _TOOLS
+            from app.lodging_tools import execute_tool as _execute_tool
+        else:
+            from app.agent_tools import BOOKING_TOOLS as _TOOLS
+            from app.agent_tools import execute_tool as _execute_tool
+        tool_executor = lambda name, inp: _execute_tool(name, inp, line_user_id=line_user_id)
         result = call_claude_with_tools(
             system_prompt=system_prompt,
             history=history,
             user_message=text,
             model=settings.anthropic_model,
-            tools=BOOKING_TOOLS,
+            tools=_TOOLS,
             tool_executor=tool_executor,
         )
     else:

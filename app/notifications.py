@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import zoneinfo
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -56,9 +57,92 @@ _OWNER_TEMPLATE = (
 )
 
 
+_STAY_CUSTOMER_TEMPLATES: dict[str, str] = {
+    "zh": (
+        "✅ 訂房確認\n"
+        "房型：{room}\n"
+        "入住：{check_in}\n"
+        "退房：{check_out}（共 {nights} 晚）\n"
+        "人數：{guests} 人\n"
+        "總金額：NT${total}\n"
+        "如需取消請提前告知，謝謝 🏡"
+    ),
+    "en": (
+        "✅ Booking Confirmed\n"
+        "Room: {room}\n"
+        "Check-in: {check_in}\n"
+        "Check-out: {check_out} ({nights} night(s))\n"
+        "Guests: {guests}\n"
+        "Total: NT${total}\n"
+        "Please notify us in advance to cancel. Thank you 🏡"
+    ),
+}
+
+_STAY_OWNER_TEMPLATE = (
+    "🏡 新訂房通知\n"
+    "客戶：{customer}\n"
+    "房型：{room}\n"
+    "入住：{check_in} → {check_out}（{nights} 晚）\n"
+    "人數：{guests} 人\n"
+    "總金額：NT${total}\n"
+    "{notes}"
+)
+
+
 def _format_dt(dt: Any) -> str:
     local = dt.astimezone(TZ)
     return local.strftime("%Y/%m/%d %H:%M")
+
+
+def send_booking_stay_confirmation(
+    *,
+    line_user_id: str,
+    room_name: str,
+    check_in: date,
+    check_out: date,
+    nights: int,
+    guests: int,
+    total_price: int,
+    customer_name: str,
+    notes: str,
+    preferred_language: str,
+    line_client: "LineClient",
+    owner_line_user_id: str | None,
+) -> None:
+    """Push a lodging booking confirmation to the customer and notify the owner."""
+    from app.line_client import ReplyMessage
+
+    lang = preferred_language or "zh"
+    template = _STAY_CUSTOMER_TEMPLATES.get(lang, _STAY_CUSTOMER_TEMPLATES["zh"])
+    customer_text = template.format(
+        room=room_name,
+        check_in=check_in.isoformat(),
+        check_out=check_out.isoformat(),
+        nights=nights,
+        guests=guests,
+        total=total_price,
+    )
+    line_client.push(
+        line_user_id=line_user_id,
+        messages=[ReplyMessage.text(customer_text)],
+    )
+
+    if owner_line_user_id:
+        notes_str = f"備註：{notes}" if notes else ""
+        owner_text = _STAY_OWNER_TEMPLATE.format(
+            customer=customer_name,
+            room=room_name,
+            check_in=check_in.isoformat(),
+            check_out=check_out.isoformat(),
+            nights=nights,
+            guests=guests,
+            total=total_price,
+            notes=notes_str,
+        )
+        line_client.push(
+            line_user_id=owner_line_user_id,
+            messages=[ReplyMessage.text(owner_text)],
+        )
 
 
 def send_booking_confirmation(

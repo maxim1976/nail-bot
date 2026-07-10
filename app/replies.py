@@ -1,5 +1,6 @@
 PERSONA_SELECT: dict[str, str] = {
     "💅 我要預約": "booking_assistant",
+    "🏡 訂房": "lodging_assistant",
     "🏪 了解此服務": "sales_agent",
 }
 
@@ -7,7 +8,7 @@ WELCOME_FOLLOW = (
     "嗨！歡迎來到 Hualienvibe 💅\n"
     "請問妳是？"
 )
-WELCOME_FOLLOW_QUICK_REPLIES: tuple[str, ...] = ("💅 我要預約", "🏪 了解此服務")
+WELCOME_FOLLOW_QUICK_REPLIES: tuple[str, ...] = ("💅 我要預約", "🏡 訂房", "🏪 了解此服務")
 
 HINT_SELECT_PERSONA = "請先選擇妳的身份 👇"
 

@@ -232,6 +232,84 @@ class Appointment(Base):
     service: Mapped[Service] = relationship(back_populates="appointments")
 
 
+class RoomType(Base):
+    """A bookable lodging unit (民宿 room type or whole-house 包棟). Analog of Service."""
+    __tablename__ = "room_types"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    name_en: Mapped[str] = mapped_column(String, nullable=False, server_default="")
+    description: Mapped[str] = mapped_column(String, nullable=False, server_default="")
+    capacity: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_capacity: Mapped[int] = mapped_column(Integer, nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
+    price_weekday: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_peak: Mapped[int] = mapped_column(Integer, nullable=False)
+    price_holiday: Mapped[int] = mapped_column(Integer, nullable=False)
+    extra_bed_price: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=800, server_default="800"
+    )
+    max_extra_beds: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    is_available: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="true"
+    )
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    bookings: Mapped[list[Booking]] = relationship(back_populates="room_type")
+
+
+class Booking(Base):
+    """A lodging stay over a date range (check-in → check-out). Analog of Appointment."""
+    __tablename__ = "bookings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    line_user_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.line_user_id"), nullable=False
+    )
+    room_type_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("room_types.id"), nullable=False
+    )
+    check_in: Mapped[dt_date] = mapped_column(Date, nullable=False)
+    check_out: Mapped[dt_date] = mapped_column(Date, nullable=False)
+    guests: Mapped[int] = mapped_column(Integer, nullable=False)
+    extra_beds: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    total_price: Mapped[int] = mapped_column(Integer, nullable=False)
+    # status: confirmed → completed | cancelled (auto-confirmed on booking)
+    status: Mapped[str] = mapped_column(
+        String, nullable=False, default="confirmed", server_default="confirmed"
+    )
+    customer_name: Mapped[str] = mapped_column(String, nullable=False, server_default="")
+    notes: Mapped[str | None] = mapped_column(String)
+    reminder_sent: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    room_type: Mapped[RoomType] = relationship(back_populates="bookings")
+
+
+class HolidayDate(Base):
+    """Day-type overrides for lodging pricing. Only store dates that differ from the weekday rule."""
+    __tablename__ = "holiday_dates"
+
+    date: Mapped[dt_date] = mapped_column(Date, primary_key=True)
+    # day_type: "peak" | "holiday"
+    day_type: Mapped[str] = mapped_column(String, nullable=False)
+
+
 class PortfolioItem(Base):
     __tablename__ = "portfolio_items"
 
