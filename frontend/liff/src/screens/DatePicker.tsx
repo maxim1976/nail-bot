@@ -16,7 +16,11 @@ function addDays(d: Date, n: number): Date {
 }
 
 function toYMD(d: Date): string {
-  return d.toISOString().split('T')[0]
+  // Local date parts, not toISOString(): that returns the UTC date, which is the
+  // previous day before 08:00 in Taiwan and would not match the button's label.
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
 }
 
 export function DatePicker({ service, onSelect, onBack }: Props) {
