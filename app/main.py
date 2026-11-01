@@ -27,6 +27,23 @@ _RICH_MENU_IMAGE = Path(__file__).parent / "assets" / "rich-menu.jpg"
 _rich_menu_id_cache: str | None = None
 
 
+class _LiffStaticFiles(StaticFiles):
+    """Serve the LIFF build so a deploy reaches phones on their next open.
+
+    Without Cache-Control, LINE's in-app browser can reuse a stale index.html,
+    which keeps loading the previous bundle. The HTML must be revalidated;
+    files in assets/ have content hashes in their names, so they never change.
+    """
+
+    def file_response(self, full_path, stat_result, scope, status_code=200):
+        response = super().file_response(full_path, stat_result, scope, status_code)
+        if Path(full_path).parent.name == "assets":
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
+
 def _build_line_client() -> LineClient:
     return LineClient(channel_access_token=get_settings().line_channel_access_token)
 
@@ -134,7 +151,7 @@ def create_app() -> FastAPI:
 
     _liff_dist = Path(__file__).parent.parent / "frontend" / "liff" / "dist"
     if _liff_dist.exists():
-        app.mount("/liff", StaticFiles(directory=_liff_dist, html=True), name="liff")
+        app.mount("/liff", _LiffStaticFiles(directory=_liff_dist, html=True), name="liff")
 
     _admin_ui = Path(__file__).parent.parent / "frontend" / "admin"
     if _admin_ui.exists():
